@@ -1,0 +1,57 @@
+resources:
+  jobs:
+    apply_metric_views:
+      name: apply_metric_views
+      description: >
+        Applies ontology tags and SELECT grants on the existing five metrics_* views,
+        materializes ontology.kg_nodes / kg_edges, grants SELECT on the KG tables,
+        then drops legacy mv_executive_* views.
+
+        Metric-view CREATE OR REPLACE is not in this job (definitions live in
+        src/metric_views/metrics_*.sql). Re-add those tasks only when the YAML
+        KPI contract changes and the runner has MANAGE on the views.
+
+      parameters:
+        - name: catalog
+          default: ${var.gold_catalog}
+        - name: grant_group
+          default: ${var.genie_space_permission_group}
+
+      tasks:
+        - task_key: materialize_kg
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/ontology/materialize_kg.sql
+
+        - task_key: grant_kg
+          depends_on:
+            - task_key: materialize_kg
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/ontology/grant_kg.sql
+
+        - task_key: tag_metric_views
+          depends_on:
+            - task_key: grant_kg
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/metric_views/tag_metric_views.sql
+
+        - task_key: grant_metric_views
+          depends_on:
+            - task_key: tag_metric_views
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/metric_views/grant_metric_views.sql
+
+        - task_key: drop_legacy_mv_executive
+          depends_on:
+            - task_key: grant_metric_views
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/metric_views/drop_legacy_mv_executive.sql

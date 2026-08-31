@@ -1,0 +1,4 @@
+# Dependencies for glossary → UC tags / OWL compilers
+PyYAML>=6.0
+owlready2>=0.46
+rdflib>=7.0

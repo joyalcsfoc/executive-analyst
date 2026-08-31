@@ -1,0 +1,65 @@
+# Executive Analyst — knowledge-graph object properties (TBox)
+# System of record for typed edges. glossary.yml remains SoR for terms/classes.
+# Materialized ABox: ontology.kg_edges.rel must match each property's `rel`.
+# Regenerate OWL: python src/ontology/generate_owl.py  (or ./deploy.sh regen-tags)
+#
+# Do not invent Campaign → Order edges until gold has a bridge table.
+
+version: 1
+
+object_properties:
+  - id: has_line
+    rel: hasLine
+    domain: plant
+    range: production_line
+    comment: >
+      Plant contains a production line. Materialized from distinct
+      (PLANT_KEY, LINE_KEY) on fact_production_execution — not from dim alone.
+
+  - id: produces
+    rel: produces
+    domain: production_line
+    range: model
+    comment: >
+      Production line runs a vehicle model. Distinct (LINE_KEY, MODEL_KEY)
+      on fact_production_execution.
+
+  - id: sold_by
+    rel: soldBy
+    domain: model
+    range: dealer
+    comment: >
+      Model sold through a dealer. Distinct (MODEL_KEY, DEALER_KEY)
+      on fact_sales_order.
+
+  - id: stocked_at
+    rel: stockedAt
+    domain: part
+    range: warehouse
+    comment: >
+      Part stocked at a warehouse on the current inventory snapshot only
+      (is_current_snapshot / latest SNAPSHOT_DATE_KEY).
+
+  - id: supplies
+    rel: supplies
+    domain: supplier
+    range: part
+    comment: >
+      Supplier supplies a part (incoming quality). Distinct
+      (SUPPLIER_KEY, PART_KEY) on fact_supplier_quality.
+
+  - id: runs_on_channel
+    rel: runsOnChannel
+    domain: campaign
+    range: channel
+    comment: >
+      Campaign flight on a media channel. Distinct (CAMPAIGN_KEY, CHANNEL_KEY)
+      on fact_campaign_performance.
+
+  - id: runs_on_segment
+    rel: runsOnSegment
+    domain: campaign
+    range: segment
+    comment: >
+      Campaign flight targeting a customer segment. Distinct
+      (CAMPAIGN_KEY, SEGMENT_KEY) on fact_campaign_performance.

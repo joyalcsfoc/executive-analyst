@@ -1,0 +1,10 @@
+resources:
+  genie_spaces:
+    executive_analyst:
+      title: "Executive Analyst"
+      description: "C-level cross-functional agent covering revenue, marketing, manufacturing, inventory, and supplier quality for Automotive Manufacturing operations."
+      warehouse_id: ${var.warehouse_id}
+      file_path: ../src/executive_analyst.geniespace.json
+      permissions:
+        - level: ${var.genie_space_permission_level}
+          group_name: ${var.genie_space_permission_group}

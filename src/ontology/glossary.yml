@@ -1,0 +1,308 @@
+# Executive Analyst — Unity Catalog Glossary (Git source of truth)
+# Catalog Explorer: create/link terms from this file. Do not invent definitions in the UI.
+# Dev catalog = gold_dev; prod catalog = gold (same schema.view paths under each catalog).
+# UC Domains (Step 1) are skipped — domain is carried as a tag on metric views instead.
+#
+# Apply tags (as code): ./deploy.sh apply-metrics  → task tag_metric_views
+#   (domain, grain, kpi, glossary_terms, glossary_source on views + dims)
+# After editing links_to or graph.yml: ./deploy.sh regen-tags  (runs generate_tag_sql.py + generate_owl.py)
+# Optional UI Assign: see wiring_checklist.md (deferred until Glossary Pages are in the workspace)
+
+version: 1
+catalog: gold_dev
+
+terms:
+  # --- Measures ---
+  - id: revenue
+    name: Revenue
+    owner: finance
+    definition: >
+      Default sales KPI. Sum of ORDER_AMOUNT on sales orders. Currency INR.
+      Do not substitute BOOKING_AMOUNT unless the user asks for bookings.
+    related: [bookings]
+    not_same_as: [bookings]
+    links_to:
+      - view: revenue_analytics.metrics_sales_order
+        measure: total_revenue
+
+  - id: bookings
+    name: Bookings
+    owner: finance
+    definition: >
+      Booked / pipeline value. Sum of BOOKING_AMOUNT. INR. Not recognized revenue.
+    related: [revenue]
+    not_same_as: [revenue]
+    links_to:
+      - view: revenue_analytics.metrics_sales_order
+        measure: total_bookings
+
+  - id: discount
+    name: Discount
+    owner: finance
+    definition: Discount given on orders. Sum of DISCOUNT_AMOUNT. INR. One sense of ambiguous "cost".
+    related: [cost, discount_percent]
+    not_same_as: [discount_percent]
+    links_to:
+      - view: revenue_analytics.metrics_sales_order
+        measure: total_discount
+
+  - id: discount_percent
+    name: Discount percent
+    owner: finance
+    definition: >
+      Discount as a share of revenue. MEASURE(discount_percent) =
+      100 * SUM(DISCOUNT_AMOUNT) / SUM(ORDER_AMOUNT). Unit is percent on a 0-100 scale,
+      not INR — never render with a currency symbol. Never AVG per-order ratios.
+    related: [discount, revenue]
+    not_same_as: [discount]
+    links_to:
+      - view: revenue_analytics.metrics_sales_order
+        measure: discount_percent
+
+  - id: delivered_order
+    name: Delivered order
+    owner: finance
+    definition: >
+      Sales order with STATUS = DELIVERED. Pipeline sequence PROCESSING → CONFIRMED → DELIVERED.
+      Not the same as marketing Conversion.
+    related: [conversion_marketing]
+    not_same_as: [conversion_marketing]
+    links_to:
+      - view: revenue_analytics.metrics_sales_order
+        measure: delivered_order_revenue
+      - view: revenue_analytics.metrics_sales_order
+        field: order_status
+
+  - id: roas
+    name: ROAS
+    owner: marketing
+    definition: >
+      Spend-weighted return on ad spend MEASURE(weighted_roas).
+      Values > 1.0 are a positive return. Never AVG(ROAS).
+    related: [cpl]
+    links_to:
+      - view: marketing_analytics.metrics_campaign_performance
+        measure: weighted_roas
+
+  - id: cpl
+    name: CPL
+    owner: marketing
+    definition: >
+      Cost per lead. MEASURE(cost_per_lead) = SUM(ACTUAL_SPEND) / SUM(LEADS). INR per lead.
+      Never AVG(COST_PER_LEAD). One sense of ambiguous "cost".
+    related: [cost, roas]
+    links_to:
+      - view: marketing_analytics.metrics_campaign_performance
+        measure: cost_per_lead
+
+  - id: conversion_marketing
+    name: Conversion (marketing)
+    owner: marketing
+    definition: >
+      Campaign CONVERSIONS on fact_campaign_performance / metrics_campaign_performance.
+      Not the same as sales-order DELIVERED status.
+    related: [delivered_order]
+    not_same_as: [delivered_order]
+    links_to:
+      - view: marketing_analytics.metrics_campaign_performance
+        measure: total_conversions
+
+  - id: oee
+    name: OEE
+    owner: manufacturing
+    definition: >
+      Overall equipment effectiveness. Stored as 0–100 percent (availability × performance × quality components also 0–100).
+      "Below 70%" means OEE_PCT < 70 or oee_below_70. Display with one decimal in summaries.
+      One sense of ambiguous "efficiency".
+    related: [efficiency, downtime]
+    links_to:
+      - view: manufacturing_analytics.metrics_production_execution
+        measure: average_oee
+      - view: manufacturing_analytics.metrics_production_execution
+        field: oee_below_70
+
+  - id: downtime
+    name: Downtime
+    owner: manufacturing
+    definition: Production downtime duration in minutes (column DOWNTIME_MIN). MEASURE(total_downtime).
+    related: [oee]
+    links_to:
+      - view: manufacturing_analytics.metrics_production_execution
+        measure: total_downtime
+
+  - id: stockout_risk
+    name: Stockout risk
+    owner: supply_chain
+    definition: >
+      Point-in-time risk band LOW / MEDIUM / HIGH.
+      HIGH means QUANTITY_ON_HAND below SAFETY_STOCK_QTY.
+      For current status filter is_current_snapshot = true; never sum on-hand across dates.
+    related: [days_of_supply]
+    links_to:
+      - view: supply_chain_analytics.metrics_inventory_snapshot
+        field: stockout_risk
+      - view: supply_chain_analytics.metrics_inventory_snapshot
+        field: high_stockout
+
+  - id: days_of_supply
+    name: Days of supply
+    owner: supply_chain
+    definition: Point-in-time cover days (DAYS_OF_SUPPLY). Do not treat as cumulative across snapshot dates.
+    related: [stockout_risk, inventory_turnover]
+    links_to:
+      - view: supply_chain_analytics.metrics_inventory_snapshot
+        measure: average_days_of_supply
+
+  - id: inventory_turnover
+    name: Inventory turnover
+    owner: supply_chain
+    definition: >
+      Point-in-time INVENTORY_TURNOVER_RATIO. Other sense of ambiguous "efficiency" (not OEE).
+      Do not average blindly across mixed snapshot dates.
+    related: [efficiency, oee]
+    not_same_as: [oee]
+    links_to:
+      - view: supply_chain_analytics.metrics_inventory_snapshot
+        measure: average_turnover
+
+  - id: ppm
+    name: PPM
+    owner: quality
+    definition: >
+      Parts-per-million defect rate. MEASURE(ppm) = SUM(DEFECT_QTY) / SUM(INSPECTED_QTY) * 1e6.
+      Lower is better. Never SUM(PPM_LEVEL).
+    related: [copq]
+    links_to:
+      - view: supply_chain_analytics.metrics_supplier_quality
+        measure: ppm
+
+  - id: copq
+    name: COPQ
+    owner: quality
+    definition: Cost of poor quality. Sum of COST_OF_POOR_QUALITY. INR. Another sense of ambiguous "cost".
+    related: [cost, ppm]
+    links_to:
+      - view: supply_chain_analytics.metrics_supplier_quality
+        measure: copq
+
+  # --- Ambiguous disambiguation terms ---
+  - id: cost
+    name: Cost
+    owner: executive_analyst
+    definition: >
+      Ambiguous. Clarify before querying: campaign spend/CPL, quality COPQ, or order discount.
+    related: [cpl, copq, discount]
+    links_to: []
+
+  - id: efficiency
+    name: Efficiency
+    owner: executive_analyst
+    definition: >
+      Ambiguous. Clarify before querying: production OEE vs inventory turnover.
+    related: [oee, inventory_turnover]
+    links_to: []
+
+  # --- Entities (confirmed dims) ---
+  - id: plant
+    name: Plant
+    owner: manufacturing
+    definition: Manufacturing site. Use plant_name from metrics_production_execution (dim_plant).
+    related: [production_line]
+    links_to:
+      - view: manufacturing_analytics.metrics_production_execution
+        field: plant_name
+      - table: dim.dim_plant
+
+  - id: production_line
+    name: Production line
+    owner: manufacturing
+    definition: Line inside a plant. Use line_name (dim_production_line). No dim_shift; shift is shift_code on the fact.
+    related: [plant]
+    links_to:
+      - view: manufacturing_analytics.metrics_production_execution
+        field: line_name
+      - table: dim.dim_production_line
+
+  - id: part
+    name: Part
+    owner: supply_chain
+    definition: SKU / component. Use part_name from inventory and supplier-quality metric views (dim_part).
+    related: [warehouse, supplier]
+    links_to:
+      - view: supply_chain_analytics.metrics_inventory_snapshot
+        field: part_name
+      - view: supply_chain_analytics.metrics_supplier_quality
+        field: part_name
+      - table: dim.dim_part
+
+  - id: warehouse
+    name: Warehouse
+    owner: supply_chain
+    definition: Stock location. Use warehouse_name (dim_warehouse).
+    related: [part]
+    links_to:
+      - view: supply_chain_analytics.metrics_inventory_snapshot
+        field: warehouse_name
+      - table: dim.dim_warehouse
+
+  - id: supplier
+    name: Supplier
+    owner: quality
+    definition: Incoming-quality vendor. Use supplier_name (dim_supplier).
+    related: [part, ppm, copq]
+    links_to:
+      - view: supply_chain_analytics.metrics_supplier_quality
+        field: supplier_name
+      - table: dim.dim_supplier
+
+  - id: dealer
+    name: Dealer
+    owner: finance
+    definition: Sales channel partner. Use dealer_name (dim_dealer).
+    related: [model]
+    links_to:
+      - view: revenue_analytics.metrics_sales_order
+        field: dealer_name
+      - table: dim.dim_dealer
+
+  - id: model
+    name: Model
+    owner: finance
+    definition: Vehicle / product model. Use model_name (dim_vehicle_model).
+    related: [dealer, plant]
+    links_to:
+      - view: revenue_analytics.metrics_sales_order
+        field: model_name
+      - view: manufacturing_analytics.metrics_production_execution
+        field: model_name
+      - table: dim.dim_vehicle_model
+
+  - id: campaign
+    name: Campaign
+    owner: marketing
+    definition: Marketing campaign. Use campaign_name (dim_campaign).
+    related: [channel, segment, roas]
+    links_to:
+      - view: marketing_analytics.metrics_campaign_performance
+        field: campaign_name
+      - table: dim.dim_campaign
+
+  - id: channel
+    name: Channel
+    owner: marketing
+    definition: Marketing media channel. Use channel_name (dim_channel).
+    related: [campaign, segment]
+    links_to:
+      - view: marketing_analytics.metrics_campaign_performance
+        field: channel_name
+      - table: dim.dim_channel
+
+  - id: segment
+    name: Segment
+    owner: marketing
+    definition: Customer segment. Use segment_name (dim_customer_segment).
+    related: [campaign, channel]
+    links_to:
+      - view: marketing_analytics.metrics_campaign_performance
+        field: segment_name
+      - table: dim.dim_customer_segment

@@ -1,0 +1,51 @@
+resources:
+  jobs:
+    validate_metric_views:
+      name: validate_metric_views
+      description: >
+        Read-only SQL assertions against the five metrics_* views: dim-key
+        uniqueness (rely.at_most_one_match), view/fact row-count parity (fan-out
+        canary), certified KPI trap formulas (weighted ROAS, CPL, PPM,
+        discount_percent, revenue vs bookings, OEE scale/threshold), inventory
+        snapshot grain, and ontology.kg_nodes/kg_edges integrity (orphan edges,
+        node_id uniqueness, rel vocabulary, domain/range conformance). Mirrors
+        src/ontology/benchmark_questions.md. Safe to run
+        anytime, including prod. Kept separate from apply_metric_views: it needs no
+        grant/DDL privileges, a failure here must not block tag/grant application,
+        and it should run on every metric-view edit rather than only alongside the
+        grant/KG pipeline.
+
+      parameters:
+        - name: catalog
+          default: ${var.gold_catalog}
+
+      tasks:
+        - task_key: assert_dim_uniqueness
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/tests/assert_dim_uniqueness.sql
+
+        - task_key: assert_view_row_counts
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/tests/assert_view_row_counts.sql
+
+        - task_key: assert_kpi_formulas
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/tests/assert_kpi_formulas.sql
+
+        - task_key: assert_snapshot_grain
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/tests/assert_snapshot_grain.sql
+
+        - task_key: assert_kg_integrity
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/tests/assert_kg_integrity.sql

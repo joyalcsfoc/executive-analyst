@@ -1,0 +1,937 @@
+{
+  "version": 2,
+  "config": {
+    "sample_questions": [
+      {
+        "id": "0a43f2f4516245dabd22490f1b651a27",
+        "question": [
+          "How is revenue tracking this quarter versus last quarter?"
+        ]
+      },
+      {
+        "id": "3f72211d3fdf4633b5921e4d81c8c9e8",
+        "question": [
+          "Which dealers and vehicle models are actually growing our top line this month?"
+        ]
+      },
+      {
+        "id": "4623585fb41142bb9e1c37655e690ec2",
+        "question": [
+          "What is the bookings pipeline versus recognized revenue this month?"
+        ]
+      },
+      {
+        "id": "8f2a3090b79d45ff8eb65f40ada3cbf1",
+        "question": [
+          "Are we converting marketing spend into growth — which campaigns delivered the best ROAS last month?"
+        ]
+      },
+      {
+        "id": "c43d6ad04dd746538b25fca5bbd9b1f0",
+        "question": [
+          "Which customer segments are driving campaign conversions this quarter?"
+        ]
+      },
+      {
+        "id": "cb886e3613104103aafa8d1b551db862",
+        "question": [
+          "How much discount are we giving away relative to revenue this month?"
+        ]
+      },
+      {
+        "id": "e1585ff31bed4d5d96d5f6745dbc802f",
+        "question": [
+          "What is our marketing cost per lead by channel, and is spend efficient?"
+        ]
+      },
+      {
+        "id": "e826c1cea3144860877088a89ca8b5cf",
+        "question": [
+          "What is the cost of poor quality this quarter, and which suppliers are driving it?"
+        ]
+      },
+      {
+        "id": "1eefe270c0aa4931bea214bc3eebcc75",
+        "question": [
+          "Which customer segments are we reaching most effectively this quarter?"
+        ]
+      },
+      {
+        "id": "2d6508996ae545e7846be57498f3428e",
+        "question": [
+          "Are we delivering what we booked — delivered-order revenue versus total bookings this month?"
+        ]
+      },
+      {
+        "id": "a48881b855a04d769e5f97e4c439368e",
+        "question": [
+          "Which dealers are our most important customer-facing partners by revenue this quarter?"
+        ]
+      },
+      {
+        "id": "61fe4349028d456ebf56b8126ecdfd6e",
+        "question": [
+          "Do campaign conversions last month actually show up as delivered sales?"
+        ]
+      },
+      {
+        "id": "985f8657401949498b2dcc9c118c8b63",
+        "question": [
+          "Which models should we double down on — revenue this quarter plus plant OEE for those models?"
+        ]
+      },
+      {
+        "id": "5301db9c6b0c4cfcb780ba112c57c3bb",
+        "question": [
+          "Where is our commercial edge: top channels by weighted ROAS versus top models by revenue?"
+        ]
+      },
+      {
+        "id": "7aa9954670f8499a862a165b2c5e5c34",
+        "question": [
+          "How is the business doing this quarter across revenue, plant performance, and stock availability?"
+        ]
+      },
+      {
+        "id": "f4c2a9d3b8e1470aa5d6c07b19e83f52",
+        "question": [
+          "Are we winning on quality in the supply base — supplier quality scores and PPM this quarter?"
+        ]
+      },
+      {
+        "id": "a101a7b4e2d84f1a9c3e5b7082d14a01",
+        "question": [
+          "Which plants are not executing — OEE below 70% last week?"
+        ]
+      },
+      {
+        "id": "a102b8c5f3e9502b0d4f6c8193e25b12",
+        "question": [
+          "Where is the shop floor losing time — downtime by plant, line, and shift this week?"
+        ]
+      },
+      {
+        "id": "a103c9d604fa613c1e507d92a4f36c23",
+        "question": [
+          "Are our go-to-market teams executing — campaign ROAS and cost per lead by channel last month?"
+        ]
+      },
+      {
+        "id": "a104dae7150b724d2f618ea3b5047d34",
+        "question": [
+          "Which dealers are under-executing on delivered revenue this quarter?"
+        ]
+      },
+      {
+        "id": "a105ebf8261c835e30729fb4c6158e45",
+        "question": [
+          "Which customer segments are driving campaign conversions this quarter?"
+        ]
+      },
+      {
+        "id": "a107fc09372d946f4183a0c5d7269f56",
+        "question": [
+          "What is our marketing cost per lead by channel, and is spend efficient?"
+        ]
+      },
+      {
+        "id": "a1080d1a483ea5705294b1d6e837a067",
+        "question": [
+          "What is the cost of poor quality this quarter, and which suppliers are driving it?"
+        ]
+      },
+      {
+        "id": "a1091e2b594fb68163a5c2e7f948b178",
+        "question": [
+          "If I say “what did we spend last month,” what costs should I look at first?"
+        ]
+      },
+      {
+        "id": "a1102f3c6a50c79274b6d3f80a59c289",
+        "question": [
+          "Which customer segments are we reaching most effectively this quarter?"
+        ]
+      },
+      {
+        "id": "a111304d7b61d8a385c7e401b66ad39a",
+        "question": [
+          "Are we delivering what we booked — delivered-order revenue versus total bookings this month?"
+        ]
+      },
+      {
+        "id": "a112415e8c72e9b496d8f512c77be4ab",
+        "question": [
+          "Which dealers are our most important customer-facing partners by revenue this quarter?"
+        ]
+      },
+      {
+        "id": "a113526f9d83fac5a7e90623d88cf5bc",
+        "question": [
+          "Do campaign conversions last month actually show up as delivered sales?"
+        ]
+      },
+      {
+        "id": "a1146370ae94abd6b8fa1734e99d06cd",
+        "question": [
+          "Which models should we double down on — revenue this quarter plus plant OEE for those models?"
+        ]
+      },
+      {
+        "id": "a1157481bf05ace7c90b2845faae17de",
+        "question": [
+          "Where is our commercial edge: top channels by weighted ROAS versus top models by revenue?"
+        ]
+      },
+      {
+        "id": "a1168592c016adf8da1c39560bbf28ef",
+        "question": [
+          "How is the business doing this quarter across revenue, plant performance, and stock availability?"
+        ]
+      },
+      {
+        "id": "a11796a3d127ae09eb2d4a671cc039f0",
+        "question": [
+          "Are we winning on quality in the supply base — supplier quality scores and PPM this quarter?"
+        ]
+      },
+      {
+        "id": "a118a7b4e238af00fc3e5b782dd14a01",
+        "question": [
+          "Which plants are not executing — OEE below 70% last week?"
+        ]
+      },
+      {
+        "id": "a119b8c5f349a0010d4f6c893ee25b12",
+        "question": [
+          "Where is the shop floor losing time — downtime by plant, line, and shift this week?"
+        ]
+      },
+      {
+        "id": "a120c9d6045aa021e507da94ff36c23a",
+        "question": [
+          "Which production lines are the execution risk this month (lowest OEE, highest downtime)?"
+        ]
+      },
+      {
+        "id": "a121dae7156ba0032f618eb3a0047d34",
+        "question": [
+          "Are our go-to-market teams executing — campaign ROAS and cost per lead by channel last month?"
+        ]
+      },
+      {
+        "id": "a123fc09378da054183a0d5c2269f56a",
+        "question": [
+          "What is at operational risk right now — parts at high stockout on the current snapshot?"
+        ]
+      },  
+      {
+        "id": "a1240d1a489ea065294b1e6d337a067a",
+        "question": [
+          "Which warehouses and parts have the thinnest days of supply today?"
+        ]
+      },
+      {
+        "id": "a1251e2b59afa0a763a5c2f7e448b178",
+        "question": [
+          "Which suppliers are a quality / compliance risk this quarter (PPM and COPQ)?"
+        ]
+      },
+      {
+        "id": "a1262f3c6ab0a1a874b6d308f559c289",
+        "question": [
+          "Do we have plants persistently below the 70% OEE operating standard this month?"
+        ]
+      },
+      {
+        "id": "a127304d7bc1a2a985c7e419066ad39a",
+        "question": [
+          "If someone asks for total inventory value across all dates, what should we do?"
+        ]
+      },
+      {
+        "id": "a128415e8cd2a3aa96d8f52a177be4ab",
+        "question": [
+          "Give me the board risk snapshot: high stockout now, OEE below 70% this week, and COPQ this quarter."
+        ]
+      }
+    ]
+  },
+  "data_sources": {
+    "tables": [
+      {
+        "identifier": "gold_dev.manufacturing_analytics.fact_production_execution",
+        "description": [
+          "Production execution fact for row-level drill. Prefer metrics_production_execution for KPIs. Grain: 1 row per production order × line × shift × day. OEE and components are 0–100 percent values."
+        ],
+        "column_configs": [
+          {
+            "column_name": "ACTUAL_QTY",
+            "description": [
+              "Actual production quantity."
+            ],
+            "synonyms": [
+              "output",
+              "produced qty",
+              "actual output"
+            ]
+          },
+          {
+            "column_name": "AVAILABILITY_PCT",
+            "description": [
+              "OEE availability as 0–100 percent."
+            ],
+            "synonyms": [
+              "availability"
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": false
+          },
+          {
+            "column_name": "DOWNTIME_MIN",
+            "description": [
+              "Production downtime duration in minutes for the row."
+            ],
+            "synonyms": [
+              "downtime",
+              "downtime hours",
+              "line downtime",
+              "stoppage"
+            ]
+          },
+          {
+            "column_name": "ENERGY_CONSUMED_KWH",
+            "description": [
+              "Energy consumed for the production row, in kWh."
+            ],
+            "synonyms": [
+              "energy use",
+              "power consumption",
+              "energy consumption",
+              "ENERGY_CONSUMPTION"
+            ]
+          },
+          {
+            "column_name": "OEE_PCT",
+            "description": [
+              "Overall equipment effectiveness as 0–100 percent. 'Below 70%' means OEE_PCT < 70."
+            ],
+            "synonyms": [
+              "OEE",
+              "overall equipment effectiveness",
+              "efficiency"
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": false
+          },
+          {
+            "column_name": "PERFORMANCE_PCT",
+            "description": [
+              "OEE performance as 0–100 percent."
+            ],
+            "synonyms": [
+              "performance"
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": false
+          },
+          {
+            "column_name": "PLANNED_QTY",
+            "description": [
+              "Planned production quantity."
+            ],
+            "synonyms": [
+              "plan qty",
+              "target qty"
+            ]
+          },
+          {
+            "column_name": "QUALITY_PCT",
+            "description": [
+              "OEE quality as 0–100 percent."
+            ],
+            "synonyms": [
+              "quality rate"
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": false
+          },
+          {
+            "column_name": "REJECTED_QTY",
+            "description": [
+              "Rejected / scrap quantity."
+            ],
+            "synonyms": [
+              "rejects",
+              "scrap",
+              "rework qty"
+            ]
+          }
+        ]
+      },
+      {
+        "identifier": "gold_dev.marketing_analytics.fact_campaign_performance",
+        "description": [
+          "Campaign performance fact for row-level drill. Prefer metrics_campaign_performance for KPIs. Grain: 1 row per channel × campaign flight. Do not AVG ratio metrics."
+        ],
+        "column_configs": [
+          {
+            "column_name": "ACTUAL_SPEND",
+            "description": [
+              "Actual campaign spend in INR."
+            ],
+            "synonyms": [
+              "ad spend",
+              "media spend",
+              "campaign cost",
+              "marketing spend"
+            ]
+          },
+          {
+            "column_name": "CLICKS",
+            "description": [
+              "Click count for the campaign flight."
+            ],
+            "synonyms": [
+              "ad clicks"
+            ]
+          },
+          {
+            "column_name": "CONVERSIONS",
+            "description": [
+              "Marketing conversions for the flight. Not the same as sales-order DELIVERED status."
+            ],
+            "synonyms": [
+              "campaign conversions",
+              "marketing conversions"
+            ]
+          },
+          {
+            "column_name": "COST_PER_LEAD",
+            "description": [
+              "Precomputed CPL on the row. For any rollup use SUM(ACTUAL_SPEND) / SUM(LEADS), never AVG(COST_PER_LEAD)."
+            ],
+            "synonyms": [
+              "CPL",
+              "cost per lead"
+            ]
+          },
+          {
+            "column_name": "CPM",
+            "description": [
+              "Precomputed cost per thousand impressions. For rollups weight by IMPRESSIONS; do not AVG(CPM)."
+            ],
+            "synonyms": [
+              "cost per mille",
+              "cost per thousand"
+            ]
+          },
+          {
+            "column_name": "IMPRESSIONS",
+            "description": [
+              "Impression count for the campaign flight."
+            ],
+            "synonyms": [
+              "ad impressions",
+              "views"
+            ]
+          },
+          {
+            "column_name": "LEADS",
+            "description": [
+              "Lead count generated by the campaign flight."
+            ],
+            "synonyms": [
+              "marketing leads"
+            ]
+          },
+          {
+            "column_name": "REACH",
+            "description": [
+              "Unique reach for the campaign flight. Do not sum reach across overlapping flights unless asked."
+            ],
+            "synonyms": [
+              "unique reach",
+              "audience reach"
+            ]
+          },
+          {
+            "column_name": "ROAS",
+            "description": [
+              "Return on ad spend as a ratio. Values > 1.0 are a positive return. For rollups: SUM(ROAS * ACTUAL_SPEND) / SUM(ACTUAL_SPEND). Never AVG(ROAS)."
+            ],
+            "synonyms": [
+              "return on ad spend",
+              "return on ads"
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": false
+          }
+        ]
+      },
+      {
+        "identifier": "gold_dev.revenue_analytics.fact_sales_order",
+        "description": [
+          "Sales-order fact for row-level drill. Prefer metrics_sales_order for KPIs. Grain: 1 row per sales order. Use ORDER_AMOUNT for revenue."
+        ],
+        "column_configs": [
+          {
+            "column_name": "BOOKING_AMOUNT",
+            "description": [
+              "Booked order value in INR. Use for bookings / pipeline, not recognized revenue."
+            ],
+            "synonyms": [
+              "bookings",
+              "booking value",
+              "pipeline value"
+            ]
+          },
+          {
+            "column_name": "DISCOUNT_AMOUNT",
+            "description": [
+              "Discount given on the order, in INR."
+            ],
+            "synonyms": [
+              "discount",
+              "markdown",
+              "order discount"
+            ]
+          },
+          {
+            "column_name": "ORDER_AMOUNT",
+            "description": [
+              "Order value in INR. Default revenue metric: SUM(ORDER_AMOUNT)."
+            ],
+            "synonyms": [
+              "revenue",
+              "sales",
+              "order value",
+              "sales amount"
+            ]
+          },
+          {
+            "column_name": "QUANTITY",
+            "description": [
+              "Units on the sales order."
+            ],
+            "synonyms": [
+              "units",
+              "order qty",
+              "volume"
+            ]
+          },
+          {
+            "column_name": "STATUS",
+            "description": [
+              "Order pipeline status. Sequence: PROCESSING → CONFIRMED → DELIVERED."
+            ],
+            "synonyms": [
+              "order status",
+              "pipeline status"
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          }
+        ]
+      },
+      {
+        "identifier": "gold_dev.supply_chain_analytics.fact_inventory_snapshot",
+        "description": [
+          "Daily inventory snapshot for row-level drill. Prefer metrics_inventory_snapshot for KPIs. Grain: 1 row per part × warehouse × day. For current stock, filter to the latest snapshot date only. Never sum balances across dates."
+        ],
+        "column_configs": [
+          {
+            "column_name": "DAYS_OF_SUPPLY",
+            "description": [
+              "Days of supply as of the snapshot date. Point-in-time; do not sum across dates."
+            ],
+            "synonyms": [
+              "DOS",
+              "cover days",
+              "stock cover"
+            ]
+          },
+          {
+            "column_name": "INVENTORY_TURNOVER_RATIO",
+            "description": [
+              "Inventory turnover as of the snapshot date. Do not average blindly across mixed dates."
+            ],
+            "synonyms": [
+              "turnover",
+              "stock turns",
+              "inventory turns"
+            ]
+          },
+          {
+            "column_name": "QUANTITY_ON_HAND",
+            "description": [
+              "On-hand quantity as of the snapshot date (column QUANTITY_ON_HAND). Never SUM across multiple snapshot dates."
+            ],
+            "synonyms": [
+              "on hand",
+              "stock on hand",
+              "available qty",
+              "QTY_ON_HAND"
+            ]
+          },
+          {
+            "column_name": "SAFETY_STOCK_QTY",
+            "description": [
+              "Safety-stock target as of the snapshot date (column SAFETY_STOCK_QTY). Never SUM across multiple snapshot dates."
+            ],
+            "synonyms": [
+              "min stock",
+              "buffer stock",
+              "SAFETY_STOCK"
+            ]
+          },
+          {
+            "column_name": "STOCKOUT_RISK",
+            "description": [
+              "Point-in-time risk band: LOW = adequate, MEDIUM = approaching safety stock, HIGH = QTY_ON_HAND below SAFETY_STOCK."
+            ],
+            "synonyms": [
+              "stockout",
+              "stock out risk",
+              "stock risk"
+            ],
+            "enable_format_assistance": true,
+            "enable_entity_matching": true
+          },
+          {
+            "column_name": "STOCK_VALUATION",
+            "description": [
+              "Inventory value in INR as of the snapshot date. Never SUM across multiple snapshot dates."
+            ],
+            "synonyms": [
+              "inventory value",
+              "stock value",
+              "inventory valuation"
+            ]
+          }
+        ]
+      },
+      {
+        "identifier": "gold_dev.supply_chain_analytics.fact_supplier_quality",
+        "description": [
+          "Incoming supplier inspection fact for row-level drill. Prefer metrics_supplier_quality for KPIs. Grain: 1 row per inspection. PPM_LEVEL: lower is better; do not SUM it."
+        ],
+        "column_configs": [
+          {
+            "column_name": "COST_OF_POOR_QUALITY",
+            "description": [
+              "Cost of poor quality in INR for the inspection."
+            ],
+            "synonyms": [
+              "COPQ",
+              "quality cost",
+              "poor quality cost"
+            ]
+          },
+          {
+            "column_name": "DEFECT_QTY",
+            "description": [
+              "Defective quantity found in the inspection."
+            ],
+            "synonyms": [
+              "defects",
+              "rejected qty"
+            ]
+          },
+          {
+            "column_name": "INSPECTED_QTY",
+            "description": [
+              "Quantity inspected."
+            ],
+            "synonyms": [
+              "inspection qty",
+              "sample size"
+            ]
+          },
+          {
+            "column_name": "PPM_LEVEL",
+            "description": [
+              "Parts-per-million defect rate. Lower is better. Do not SUM. Roll up as SUM(DEFECT_QTY) / SUM(INSPECTED_QTY) * 1000000 when aggregating."
+            ],
+            "synonyms": [
+              "PPM",
+              "defect ppm",
+              "parts per million"
+            ]
+          },
+          {
+            "column_name": "QUALITY_SCORE",
+            "description": [
+              "Supplier quality score for the inspection. Do not SUM scores; AVG is acceptable only at equal grain."
+            ],
+            "synonyms": [
+              "supplier score",
+              "quality rating"
+            ]
+          }
+        ]
+      }
+    ],
+    "metric_views": [
+      {
+        "identifier": "gold_dev.manufacturing_analytics.metrics_production_execution",
+        "description": [
+          "Primary manufacturing KPIs. Prefer MEASURE(average_oee), MEASURE(total_downtime), MEASURE(total_actual_qty). OEE is 0–100; below 70% means oee_below_70 or OEE_PCT < 70."
+        ]
+      },
+      {
+        "identifier": "gold_dev.marketing_analytics.metrics_campaign_performance",
+        "description": [
+          "Primary marketing KPIs. Prefer MEASURE(weighted_roas) and MEASURE(cost_per_lead). Never AVG(ROAS) or AVG(COST_PER_LEAD)."
+        ]
+      },
+      {
+        "identifier": "gold_dev.revenue_analytics.metrics_sales_order",
+        "description": [
+          "Primary revenue KPIs. Prefer MEASURE(total_revenue), MEASURE(total_bookings), MEASURE(total_discount), MEASURE(discount_percent), MEASURE(delivered_order_revenue). Amount measures are INR; discount_percent is 0-100 percent, never currency. Grain matches fact_sales_order."
+        ]
+      },
+      {
+        "identifier": "gold_dev.supply_chain_analytics.metrics_inventory_snapshot",
+        "description": [
+          "Primary inventory KPIs. Snapshot grain: filter to latest date for current stock/stockout. Never sum on-hand or valuation across dates. Prefer high_stockout / restock_candidate fields and MEASURE(high_stockout_row_count)."
+        ]
+      },
+      {
+        "identifier": "gold_dev.supply_chain_analytics.metrics_supplier_quality",
+        "description": [
+          "Primary supplier quality KPIs. Prefer MEASURE(copq), MEASURE(ppm), MEASURE(average_quality_score). Never SUM(PPM_LEVEL)."
+        ]
+      }
+    ]
+  },
+  "instructions": {
+    "text_instructions": [
+      {
+        "id": "3dc26cf413aa44d88bdbc748f01a0792",
+        "content": [
+          "## Role\nYou are the Executive Analyst for Automotive Manufacturing operations. Serve C-level users with concise KPI answers across revenue, marketing, production, inventory, and supplier quality. Default to aggregates, not row dumps.\n\n## Routing (metric views first)\nPrefer Unity Catalog metric views and MEASURE(...) / certified sql_snippets. Facts only for row-level drill. Never JOIN or UNION across domains.\n- Revenue → gold_dev.revenue_analytics.metrics_sales_order (drill: fact_sales_order)\n- Marketing → gold_dev.marketing_analytics.metrics_campaign_performance (drill: fact_campaign_performance)\n- Manufacturing → gold_dev.manufacturing_analytics.metrics_production_execution (drill: fact_production_execution)\n- Inventory → gold_dev.supply_chain_analytics.metrics_inventory_snapshot (drill: fact_inventory_snapshot)\n- Supplier quality → gold_dev.supply_chain_analytics.metrics_supplier_quality (drill: fact_supplier_quality)\n- \"How is the business doing?\" → one query per domain metric view.\n\n## Clarifications before querying\n- Ambiguous \"cost\" → ask campaign spend/CPL vs COPQ vs order discount.\n- Ambiguous \"efficiency\" → ask production OEE vs inventory turnover.\n- Trend/period with no range → ask for time range. Skip for current inventory/stockout (is_current_snapshot).\n\n## Summaries\n- Headline KPI + period/snapshot, then 2–4 bullets (drivers, HIGH stockout, OEE < 70, ROAS < 1.0, quality).\n- Money in INR; ≥ 1 Cr as ₹X.XX Cr; ≥ 1 Lakh as ₹X.XX Lakh. Percents to 1 decimal with a % suffix; ROAS to 2 decimals.\n- Prefer name fields (dealer_name, plant_name, part_name, campaign_name, supplier_name). KPI definitions live in metric views and sql_snippets — do not re-derive them in ad-hoc SQL.\n\n## Mixed units in one result\nNever stack metrics with different units (INR, percent, ratio, count) into a single value column via UNION or a Metric/Value layout — one column can only carry one number format, so a percent renders as ₹. Return one column per metric instead, e.g. total_revenue, total_discount, discount_percent as three columns in one row. Name percent columns with a `_percent` / `%` suffix. If a stacked layout is unavoidable, cast the value to a string and append its unit in SQL."
+        ]
+      }
+    ],
+    "sql_snippets": {
+      "filters": [
+        {
+          "id": "a11c0e4f6b2d41f09c3a7e8d5b14c201",
+          "display_name": "High stockout risk",
+          "sql": [
+            "metrics_inventory_snapshot.high_stockout = true AND metrics_inventory_snapshot.is_current_snapshot = true"
+          ],
+          "synonyms": [
+            "high stockout",
+            "stockout risk high",
+            "parts at high stockout risk"
+          ],
+          "instruction": [
+            "Prefer metrics_inventory_snapshot with high_stockout and is_current_snapshot for current stockout. For fact drill use fact_inventory_snapshot.STOCKOUT_RISK = 'HIGH' on the latest SNAPSHOT_DATE_KEY only."
+          ],
+          "comment": [
+            "HIGH means on-hand quantity is below safety stock. Current status requires latest snapshot."
+          ]
+        },
+        {
+          "id": "b22d1f5a7c3e42a1ad4b8f9e6c25d312",
+          "display_name": "Restock candidates",
+          "sql": [
+            "metrics_inventory_snapshot.restock_candidate = true AND metrics_inventory_snapshot.is_current_snapshot = true"
+          ],
+          "synonyms": [
+            "restock",
+            "replenishment",
+            "reorder candidates"
+          ],
+          "instruction": [
+            "Prefer restock_candidate on metrics_inventory_snapshot with is_current_snapshot. Rank HIGH before MEDIUM."
+          ],
+          "comment": [
+            "HIGH is primary restock; MEDIUM is watchlist. Current snapshot only."
+          ]
+        },
+        {
+          "id": "c33e206b8d4f43b2be5c90af7d36e423",
+          "display_name": "OEE below 70%",
+          "sql": [
+            "metrics_production_execution.oee_below_70 = true"
+          ],
+          "synonyms": [
+            "low OEE",
+            "OEE under 70 percent",
+            "plants below 70% OEE"
+          ],
+          "instruction": [
+            "Prefer metrics_production_execution.oee_below_70. OEE_PCT is 0–100 percent. Below 70% means OEE_PCT < 70. Never compare to 0.70."
+          ],
+          "comment": [
+            "OEE stored as 0–100. Threshold is 70."
+          ]
+        },
+        {
+          "id": "d44f317c9e5044c3cf6da1b08e47f534",
+          "display_name": "Delivered orders",
+          "sql": [
+            "fact_sales_order.STATUS = 'DELIVERED'"
+          ],
+          "synonyms": [
+            "delivered",
+            "fulfilled orders"
+          ],
+          "instruction": [
+            "Prefer MEASURE(delivered_order_revenue) on metrics_sales_order. Use STATUS = 'DELIVERED' on fact_sales_order for row-level drill only. Not marketing conversions."
+          ],
+          "comment": [
+            "STATUS sequence: PROCESSING → CONFIRMED → DELIVERED."
+          ]
+        }
+      ],
+      "measures": [
+        {
+          "id": "111ed69d707945f3aab06aaab0425292",
+          "display_name": "PPM Defect Rate",
+          "sql": [
+            "MEASURE(ppm)"
+          ],
+          "synonyms": [
+            "PPM",
+            "defect ppm",
+            "parts per million"
+          ],
+          "instruction": [
+            "Use on metrics_supplier_quality. Never SUM(PPM_LEVEL)."
+          ],
+          "comment": [
+            "Certified: rolled-up PPM."
+          ]
+        },
+        {
+          "id": "474cfd0df4aa4d9d85272a0030a249fb",
+          "display_name": "Average OEE",
+          "sql": [
+            "MEASURE(average_oee)"
+          ],
+          "synonyms": [
+            "OEE",
+            "average OEE",
+            "overall equipment effectiveness"
+          ],
+          "instruction": [
+            "Use on metrics_production_execution. OEE is 0–100 percent. Below 70% → oee_below_70 or OEE_PCT < 70."
+          ],
+          "comment": [
+            "Certified: average OEE on 0–100 scale."
+          ]
+        },
+        {
+          "id": "9e45ba2b7e744ca69e52aded7f33b53a",
+          "display_name": "Weighted ROAS",
+          "sql": [
+            "MEASURE(weighted_roas)"
+          ],
+          "synonyms": [
+            "ROAS",
+            "return on ad spend"
+          ],
+          "instruction": [
+            "Use on metrics_campaign_performance. Never AVG(ROAS)."
+          ],
+          "comment": [
+            "Certified: spend-weighted ROAS."
+          ]
+        },
+        {
+          "id": "b1e67f27df554cc7a2bb3409b77ddb9e",
+          "display_name": "Cost Of Poor Quality",
+          "sql": [
+            "MEASURE(copq)"
+          ],
+          "synonyms": [
+            "COPQ",
+            "quality cost",
+            "cost of poor quality"
+          ],
+          "instruction": [
+            "Use on metrics_supplier_quality."
+          ],
+          "comment": [
+            "Certified: COPQ in INR."
+          ]
+        },
+        {
+          "id": "c1f7c1f65a7c457299470f41a369e49b",
+          "display_name": "Total Revenue",
+          "sql": [
+            "MEASURE(total_revenue)"
+          ],
+          "synonyms": [
+            "revenue",
+            "total sales",
+            "order value"
+          ],
+          "instruction": [
+            "Use on gold_dev.revenue_analytics.metrics_sales_order. Default sales KPI (ORDER_AMOUNT). Not bookings."
+          ],
+          "comment": [
+            "Certified: revenue this period = MEASURE(total_revenue)."
+          ]
+        },
+        {
+          "id": "c2a599041d68437aba68785a57b35cda",
+          "display_name": "Cost Per Lead",
+          "sql": [
+            "MEASURE(cost_per_lead)"
+          ],
+          "synonyms": [
+            "CPL",
+            "cost per lead",
+            "marketing cost per lead"
+          ],
+          "instruction": [
+            "Use on metrics_campaign_performance. Never AVG(COST_PER_LEAD)."
+          ],
+          "comment": [
+            "Certified: rolled-up CPL."
+          ]
+        },
+        {
+          "id": "c65ae16c379c4bb383e5219096be99cd",
+          "display_name": "Delivered Order Revenue",
+          "sql": [
+            "MEASURE(delivered_order_revenue)"
+          ],
+          "synonyms": [
+            "delivered revenue",
+            "fulfilled revenue"
+          ],
+          "instruction": [
+            "Use on metrics_sales_order. Not the same as marketing CONVERSIONS."
+          ],
+          "comment": [
+            "Certified: DELIVERED sales revenue only."
+          ]
+        },
+        {
+          "id": "e7b3d1a25c9f4d0e8a6b41f2c3d5e709",
+          "display_name": "Discount Percent",
+          "sql": [
+            "MEASURE(discount_percent)"
+          ],
+          "synonyms": [
+            "discount percent",
+            "discount rate",
+            "discount as percent of revenue",
+            "markdown rate"
+          ],
+          "instruction": [
+            "Use on gold_dev.revenue_analytics.metrics_sales_order for \"discount relative to revenue\". Result is 0-100 percent, not INR: label the column Discount % and never format it as currency. Do not re-derive as SUM(DISCOUNT_AMOUNT)/SUM(ORDER_AMOUNT) in ad-hoc SQL, and never AVG per-order ratios. Return it as its own column alongside total_revenue / total_discount, never stacked into a shared value column."
+          ],
+          "comment": [
+            "Certified: discount as percent of revenue, 0-100 scale."
+          ]
+        }
+      ]
+    }
+  }
+}

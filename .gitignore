@@ -1,0 +1,7 @@
+.databricks/
+.vscode/
+__pycache__/
+*.pyc
+.DS_Store
+src/metric_views/_describe/
+src/metric_views/_tmp_stmt.json
