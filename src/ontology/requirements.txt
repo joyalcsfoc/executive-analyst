@@ -1,4 +1,3 @@
-# Dependencies for glossary → UC tags / OWL compilers
-PyYAML>=6.0
-owlready2>=0.46
+# Dependency for src/ontology/generate.py (exec_analyst.ttl -> tags/KG/HTML)
 rdflib>=7.0
+databricks-sdk>=0.30  # verify_bindings.py only (live checks against a warehouse)

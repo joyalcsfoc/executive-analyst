@@ -10,7 +10,7 @@
 #   deploy          Deploy the bundle (Genie space + metric-view job)
 #   apply-metrics   Run apply_metric_views (tags, grants, kg_nodes/kg_edges, drop legacy)
 #   test-metrics    Run validate_metric_views (read-only KPI-formula + dim-uniqueness checks)
-#   regen-tags      Regenerate tag SQL + OWL from glossary.yml + graph.yml
+#   regen-tags      Regenerate tag SQL + KG SQL + HTML reference from exec_analyst.ttl
 #   destroy         Tear down the deployed bundle resources
 #   open            Open the deployed Genie space in the browser
 #   summary         Print the resolved bundle configuration for the target
@@ -20,8 +20,8 @@
 #   2. ./deploy.sh apply-metrics --target dev   # tags, grants, ontology.kg_* (does not CREATE metrics_*)
 #   3. ./deploy.sh test-metrics --target dev    # read-only KPI-formula + dim-uniqueness assertions
 #
-# After editing glossary.yml (terms / links_to) or graph.yml (object properties):
-#   ./deploy.sh regen-tags                  # tags SQL + OWL Turtle (classes + object properties)
+# After editing src/ontology/exec_analyst.ttl (the ontology source of truth):
+#   ./deploy.sh regen-tags                  # tags SQL + KG SQL + HTML reference
 #   ./deploy.sh deploy --target dev && ./deploy.sh apply-metrics --target dev
 #
 # If the Genie space already points at facts-only sources, you can deploy the job,
@@ -132,7 +132,7 @@ case "$ACTION" in
     echo "    Otherwise open with: ./deploy.sh open --target $TARGET"
     ;;
   apply-metrics)
-    echo "==> Running apply_metric_views job (ontology.kg_nodes/kg_edges, GRANT SELECT, tags, drop legacy)..."
+    echo "==> Running apply_metric_views job (kg_nodes/kg_edges + kg_functions, GRANT SELECT, tags, drop legacy)..."
     echo "    Ensure you have already run './deploy.sh deploy' so the job exists."
     databricks bundle run apply_metric_views "${BUNDLE_ARGS[@]}" "${VAR_ARGS[@]}"
     echo "==> Metric views + knowledge graph applied (tags + grants + kg_nodes/kg_edges)."
@@ -147,11 +147,11 @@ case "$ACTION" in
     echo "    Details: src/tests/*.sql. Genie-UX companion: src/ontology/benchmark_questions.md."
     ;;
   regen-tags)
-    echo "==> Regenerating tag_metric_views.sql + exec_analyst.ttl from glossary.yml + graph.yml..."
-    python "$SCRIPT_DIR/src/ontology/generate_tag_sql.py"
-    python "$SCRIPT_DIR/src/ontology/generate_owl.py"
-    echo "==> Done. Commit SQL/Turtle if changed; deploy + apply-metrics to push tags/KG to UC."
-    echo "    OWL TBox is Git-only (not deployed). Protégé = types; ontology.kg_* = instances."
+    echo "==> Regenerating tag_metric_views.sql, materialize_kg.sql, grant_kg.sql, kg_functions.sql,"
+    echo "    kg_queries.sql, ontology_reference.html and genie_context.json from src/ontology/exec_analyst.ttl..."
+    python "$SCRIPT_DIR/src/ontology/generate.py"
+    echo "==> Done. Commit the generated files if changed; deploy + apply-metrics to push to UC."
+    echo "    exec_analyst.ttl is the source of truth; everything else here is generated — do not hand-edit it."
     ;;
   destroy)
     databricks bundle destroy "${BUNDLE_ARGS[@]}" "${VAR_ARGS[@]}" $AUTO_APPROVE

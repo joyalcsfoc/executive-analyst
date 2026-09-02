@@ -1,261 +1,314 @@
-# Executive Analyst — Semantic Layer & Ontology (Implementation Summary)
+# Executive Analyst — Semantic Layer, Ontology & Knowledge Graph
 
-This document describes **what was implemented** in this repo for the Unity Catalog semantic layer, Phase 2 ontology, and Phase 3 Delta knowledge graph. It is a delivery record, not a design manifesto.
+**Client briefing.** What was built, what it prevents, and what remains open.
 
-**Design / runbooks (how to think about it):**
-
-- [`semantic-layer-ontology-knowledge-graph.md`](semantic-layer-ontology-knowledge-graph.md) — layers and Phases 1–4
-- [`ontology-uc-glossary-domains.md`](ontology-uc-glossary-domains.md) — Phase 2 step-by-step runbook
-- [`prd.md`](prd.md) — domains, grains, sample questions
-
-**Rule used throughout:** KPI math and grain live in **metric views**. Shared term meaning lives in **glossary YAML + UC tags**. Genie **consumes** both; it is not the system of record. The property graph is for **navigation** only.
+Supporting detail: [`prd.md`](prd.md) (domains, grains, sample questions) ·
+[`ontology-uc-glossary-domains.md`](ontology-uc-glossary-domains.md) (Phase 2 runbook) ·
+[`benchmark_questions.md`](../src/ontology/benchmark_questions.md) (45-question eval suite).
 
 ---
 
-## Architecture (as built)
+## 1. The problem this solves
 
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│  Genie space (agent)                                            │
-│  thin policy + certified sql_snippets + sample questions           │
-│  src/executive_analyst.geniespace.json                          │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ MEASURE / filters / routing
-┌────────────────────────────▼────────────────────────────────────┐
-│  Semantic layer — Unity Catalog metric views                    │
-│  five metrics_* (+ dim joins, measures, comments)               │
-│  src/metric_views/metrics_*.sql                                 │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ tags / grants / comments
-┌────────────────────────────▼────────────────────────────────────┐
-│  Ontology lite — glossary + UC tags + OWL TBox (Git)            │
-│  glossary.yml + graph.yml → generate_owl.py → exec_analyst.ttl  │
-│  glossary.yml → generate_tag_sql.py → tag_metric_views.sql      │
-│  grant_metric_views.sql (ACL prep for Genie Ontology)           │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ materialize (same apply job)
-┌────────────────────────────▼────────────────────────────────────┐
-│  Phase 3 — Delta property graph (ABox)                          │
-│  ontology.kg_nodes / kg_edges (dims + fact key pairs + KPIs)    │
-│  Not a Genie data source; query via kg_queries.sql              │
-└─────────────────────────────────────────────────────────────────┘
-```
+- An LLM pointed at a warehouse will answer **confidently and wrongly**, because it does not know what your terms mean.
+- It will average a ratio, sum a snapshot, treat bookings as revenue, and invent a join between tables that share no key.
+- None of those failures produce an error. They produce a number, and the number goes into a board pack.
+- **The fix is not a better prompt.** It is governed definitions the agent cannot route around.
 
-| Layer | Job | Implemented home |
-| --- | --- | --- |
-| **Semantic layer** | One governed definition of measures, dimensions, joins, grain | Five UC **metric views** |
-| **Ontology (authored)** | What terms/entities mean and how they differ | `glossary.yml` + UC tags on views/dims |
-| **OWL TBox (generated)** | Formal class / object properties / disjointness / asset annotations | `exec_analyst.ttl` (Git-only; not Genie runtime) |
-| **Knowledge Store** | Certified agent bindings + short policy | Genie `sql_snippets` + `text_instructions` |
-| **Genie Ontology (product)** | Learned context graph | **Not installed** — prep only (Step 6) |
-| **Property graph (ABox)** | “How is Plant X connected?” | `{catalog}.ontology.kg_nodes` / `kg_edges` via `materialize_kg.sql` |
+## 2. What was built — four layers
 
----
-
-## Phase 1 — Semantic layer (implemented)
-
-### Five metric views
-
-Applied by the `apply_metric_views` job (`./deploy.sh apply-metrics`). Catalog: `gold_dev` (dev) / `gold` (prod).
-
-| Metric view | Source fact | Grain (tag) | Example measures / filters |
+| # | Layer | Governs | Implemented as |
 | --- | --- | --- | --- |
-| `revenue_analytics.metrics_sales_order` | `fact_sales_order` | order | `total_revenue`, `total_bookings`, `total_discount`, `delivered_order_revenue` |
-| `marketing_analytics.metrics_campaign_performance` | `fact_campaign_performance` | campaign_flight | `weighted_roas`, `cost_per_lead`, `total_conversions` |
-| `manufacturing_analytics.metrics_production_execution` | `fact_production_execution` | production_row | `average_oee`, `total_downtime`, `oee_below_70` |
-| `supply_chain_analytics.metrics_inventory_snapshot` | `fact_inventory_snapshot` | snapshot | `average_days_of_supply`, `high_stockout`, `is_current_snapshot` |
-| `supply_chain_analytics.metrics_supplier_quality` | `fact_supplier_quality` | inspection | `ppm`, `copq`, `average_quality_score` |
+| 1 | **Semantic layer** | KPI math, grain, dimension joins | 5 Unity Catalog metric views |
+| 2 | **Ontology** | What terms mean; what must never be confused | `exec_analyst.ttl` (OWL, in Git) |
+| 3 | **Knowledge graph** | How entities connect | `kg_nodes` / `kg_edges` + 2 traversal functions |
+| 4 | **Agent** | Routing and policy | Genie space, defined as code |
 
-Views were renamed from legacy `mv_executive_*` to `metrics_<fact without fact_>`. Legacy names are dropped by `drop_legacy_mv_executive.sql` after apply.
+**The organizing principle:** one file is the source of truth, and everything ontology-shaped
+downstream is generated from it.
 
-### Dimension joins (entity names)
+- Nothing is maintained in two places.
+- Nothing can drift out of sync.
+- A definition change is a Git pull request, not a UI edit nobody can review.
 
-Confirmed in [`src/metric_views/column_map.md`](../src/metric_views/column_map.md) and enabled in each `metrics_*.sql`:
+**By the numbers**
 
-| Domain | Joined dims (name fields) |
+| Metric views | OWL classes | Object properties | Edge types | Generated artifacts | Bound measures | Benchmark questions |
+| --- | --- | --- | --- | --- | --- | --- |
+| 5 | 57 | 20 | 8 | 9 | 17 | 45 |
+
+---
+
+## 3. Layer 1 — Semantic layer
+
+**Five Unity Catalog metric views, one per fact table.**
+
+| Metric view | Source fact | Grain | Representative measures |
+| --- | --- | --- | --- |
+| `metrics_sales_order` | `fact_sales_order` | order | `total_revenue`, `total_bookings`, `total_discount`, `discount_percent`, `delivered_order_revenue` |
+| `metrics_campaign_performance` | `fact_campaign_performance` | campaign_flight | `weighted_roas`, `cost_per_lead`, `total_spend`, `total_conversions` |
+| `metrics_production_execution` | `fact_production_execution` | production_row | `average_oee`, `total_downtime`, `oee_below_70` |
+| `metrics_inventory_snapshot` | `fact_inventory_snapshot` | snapshot | `Avg Days of Supply`, `Avg Inventory Turnover`, `Total Stock Valuation`, `is_current_snapshot` |
+| `metrics_supplier_quality` | `fact_supplier_quality` | inspection | `PPM`, `Avg Quality Score`, `Total Cost of Poor Quality` |
+
+**Features**
+
+- **One definition per KPI**, used by every consumer — no team maintains its own version of revenue.
+- **Dimension joins enabled on all five**, so answers name *Plant Manesar*, not `PLANT_KEY=7`.
+- **Every join declares `at_most_one_match: true`**, and the test suite verifies it — a violated
+  assumption silently fans out the join and corrupts every KPI on the view.
+- **Grain is declared, not assumed** — recorded as a Unity Catalog tag on each view.
+- **Renamed from legacy `mv_executive_*`** to a predictable `metrics_<fact>` convention; legacy
+  names dropped automatically.
+
+**The KPI traps encoded in the views**
+
+- **Revenue** is `SUM(ORDER_AMOUNT)`; **Bookings** is `SUM(BOOKING_AMOUNT)` — different stages of
+  the pipeline, never substituted.
+- **ROAS** and **CPL** are spend-weighted rollups — never `AVG(ROAS)` or `AVG(COST_PER_LEAD)`.
+- **PPM** is `SUM(DEFECT_QTY)/SUM(INSPECTED_QTY)*1e6` — a ratio of sums, never `SUM(PPM_LEVEL)`.
+- **OEE** is stored 0–100, so "below 70%" is `OEE_PCT < 70`, never `< 0.70`.
+- **Inventory** is point-in-time — filter `is_current_snapshot`; on-hand and valuation are never
+  summed across dates.
+
+---
+
+## 4. Layer 2 — Ontology
+
+**`exec_analyst.ttl` — the source of truth for meaning.**
+
+- The Executive Analyst slice of the enterprise automotive-manufacturing ontology, **pruned to
+  what the agent is actually connected to**: 5 facts, 5 metric views, 11 dimensions.
+- **Class IRIs reused verbatim** from the enterprise `mfg:` namespace, so this file stays
+  compatible with `automotive_manufacturing_ontology.ttl` and does not fork the enterprise model.
+- **Agent-specific concepts** — KPIs, ambiguity, bindings — live in a separate `ea:` namespace.
+- **Enterprise modeling rules kept:** type attributes become class taxonomies closed with
+  `owl:AllDisjointClasses`; status attributes become enumerated classes labelled with the literal
+  warehouse value; foreign keys become object properties with declared inverses.
+- 57 classes, 20 object properties, organized by business domain.
+
+### 4.1 What makes this ontology executable
+
+A generic OWL file describes a domain; it cannot produce anything. This one carries a **binding
+layer the enterprise ontology does not have** — annotations that tie every concept to a real
+Databricks identifier.
+
+| Annotation | Generates |
 | --- | --- |
-| Revenue | `dim_dealer` → `dealer_name`, `dim_vehicle_model` → `model_name`, `dim_date` → `order_date` |
-| Marketing | `dim_campaign`, `dim_channel`, `dim_customer_segment`, `dim_date` |
-| Manufacturing | `dim_plant`, `dim_production_line`, `dim_vehicle_model`, `dim_date`; **no `dim_shift`** — `shift_code` from fact |
-| Inventory | `dim_part`, `dim_warehouse`, `dim_date`; `is_current_snapshot` for latest day |
-| Supplier quality | `dim_supplier`, `dim_part`, `dim_date` |
+| `ea:boundToTable` / `KeyColumn` / `NameColumn` | a `kg_nodes` producer |
+| `ea:boundToView` / `Measure` / `Field` | the governed `MEASURE()` the agent must use |
+| `ea:boundToColumn` | an enum bound to the column carrying its controlled vocabulary |
+| `ea:edgeFrom` / `edgeSubjectKey` / `edgeObjectKey` | a row set in `kg_edges` |
+| `ea:domainTag` / `ea:grainTag` | Unity Catalog tags on the bound metric view |
+| `ea:notSameAs` | a "never substitute these" rule in the agent instructions |
+| `ea:disambiguatesTo` | an "ask the user first" rule |
+| `ea:aka` | synonyms for entity matching |
 
-### Important KPI contracts encoded in views
+### 4.2 One file in, nine artifacts out
 
-- **Revenue** = `SUM(ORDER_AMOUNT)`; **Bookings** = `SUM(BOOKING_AMOUNT)` (separate).
-- **ROAS / CPL** = rolled-up / spend-weighted measures — never `AVG(ROAS)` or `AVG(COST_PER_LEAD)`.
-- **OEE** stored as **0–100** percent; “below 70%” = `OEE_PCT < 70` / field `oee_below_70`.
-- **PPM** = `SUM(DEFECT_QTY)/SUM(INSPECTED_QTY)*1e6` — never `SUM(PPM_LEVEL)`.
-- **Inventory** is point-in-time: filter `is_current_snapshot`; never sum on-hand/valuation across dates.
+`python src/ontology/generate.py` — or `./deploy.sh regen-tags` — reads the TTL with rdflib and rewrites:
 
-### Bundle / deploy
+| Output | Role |
+| --- | --- |
+| `tag_metric_views.sql` | Unity Catalog tags: domain, grain, kpi, glossary terms |
+| `materialize_kg.sql` | `kg_nodes` + `kg_edges` DDL |
+| `kg_functions.sql` | `kg_neighbors`, `kg_find_node` |
+| `grant_kg.sql` | `USAGE` / `SELECT` on the graph schema |
+| `kg_queries.sql` | Worked neighborhood queries |
+| `genie_context.json` | 31 synonyms, 3 vocabularies, 7 conflation pairs |
+| `executive_analyst.geniespace.json` | The generated agent-grounding block |
+| `assert_kg_integrity.sql` | Graph integrity assertions |
+| `ontology_reference.html` | Browsable page for governance review |
+
+- Every output carries a **"do not edit by hand"** banner.
+- `generate.py --check` **exits 1 if any output is stale** — it works as a CI gate.
+- The Genie file is **spliced, not overwritten**: the API permits one instruction item, so
+  everything below the marker `## Ontology grounding (generated)` is regenerated and the
+  hand-written policy above it is preserved.
+
+### 4.3 Conflations the agent is blocked from making
+
+- Bookings **≠** Revenue
+- Conversion **≠** SalesOrderStatus
+- Discount **≠** DiscountPercent
+- InventoryTurnover **≠** OEE
+
+### 4.4 Words the agent must ask about
+
+| Surface term | Could mean |
+| --- | --- |
+| "cost" | CampaignSpend · CostPerLead · COPQ · Discount |
+| "efficiency" | OEE · InventoryTurnover |
+
+### 4.5 Controlled vocabularies shipped to the agent
+
+Exact literal column values, so the agent filters on `'ACCEPT & SORT'` rather than guessing a
+spelling: **QualityDisposition**, **RiskLevel**, **SalesOrderStatus**.
+
+---
+
+## 5. Layer 3 — Knowledge graph
+
+**Why it exists:** the five metric views deliberately share no join path. That is what makes KPI
+math safe — and what makes *"which suppliers feed Plant X"* unanswerable. The graph answers
+structural questions; it carries **no measures**.
+
+| Asset | Contents |
+| --- | --- |
+| `ontology.kg_nodes` | One row per entity instance, tagged with its ontology class — Plant, ProductionLine, VehicleModel, Dealer, Part, Warehouse, Supplier, MarketingCampaign, CampaignChannel, CustomerSegment, CalendarDate |
+| `ontology.kg_edges` | Distinct key pairs from facts, typed by object property — `plantHasLine`, `plantProducesModel`, `lineProducesModel`, `dealerSellsModel`, `partStockedAt` (current snapshot only), `supplierSuppliesPart`, `campaignRunsOnChannel`, `campaignTargetsSegment` |
+| `kg_find_node(name)` | Resolves a business name to its node — the agent starts from what the user said |
+| `kg_neighbors(type, key, rel)` | One hop in either direction, optionally filtered to a single relation |
+
+**Features**
+
+- **Wired into the agent as callable tools**, under `sql_functions` — deliberately *not* as data
+  sources, so the agent traverses the graph instead of trying to aggregate over it.
+- **Rebuilt from the ontology on every apply** — the graph cannot drift from the model.
+- **Structure only, never measures** — KPI math has exactly one home, and this is not it.
+
+**One load-bearing detail:** every function parameter is `p_`-prefixed. A SQL UDF body resolves a
+bare name to a *column* in scope before a parameter, so a parameter named `node_type` silently
+rewrites `e.subject_type = node_type` into `e.subject_type = n.node_type` — the function returns
+zero rows, with no error. The prefix is not style.
+
+---
+
+## 6. Layer 4 — Agent
+
+**A thin Genie space over governed assets. It consumes the layers below; it is not the system of record.**
+
+**Data sources**
+
+- The **five metric views** — the only sanctioned path to a KPI number.
+- The **five fact tables** — row-level drill only, never for aggregates.
+- **Two knowledge-graph functions**, attached as tools for relationship questions.
+
+**Hand-written policy (authored once, reviewed in Git)**
+
+- **Route to metric views first** — facts only when the user needs individual rows.
+- **Never JOIN or UNION across domains** — the grains do not reconcile.
+- **"How is the business doing?"** fans out to one query per domain, never a single blended query.
+- **Money in INR**, formatted ₹X.XX Cr above a crore and ₹X.XX Lakh above a lakh.
+- **Percents to one decimal with a `%` suffix; ROAS to two decimals.**
+- **Never stack mixed units into one value column** — one column carries one number format, so a
+  percentage sharing a column with rupees renders as ₹. Return one column per metric instead.
+- **Prefer name fields** — `dealer_name`, `plant_name`, `part_name`, `campaign_name`, `supplier_name`.
+- **Answer shape:** headline KPI with its period or snapshot, then two to four bullets on drivers.
+
+**Generated grounding block (regenerated from the ontology, never hand-edited)**
+
+- **17 governed measure bindings** — the exact `MEASURE()` for each business concept.
+- **Conflation pairs** — the terms the agent is forbidden to substitute.
+- **Ambiguous terms** — the words it must ask about before querying.
+- **Three controlled vocabularies** with exact literal column values.
+- **Relationship routing** — send structural questions to `kg_find_node` / `kg_neighbors` instead
+  of inventing a join, plus the list of available relations.
+
+---
+
+## 7. In practice — what the client sees
+
+Seven questions from the benchmark suite. Each is a place where a plausible answer would be wrong.
+
+| Question | Mechanism | Without the ontology |
+| --- | --- | --- |
+| *Is revenue the same as bookings?* | `ea:notSameAs` | The two read as synonyms and pipeline gets reported as recognized sales |
+| *What was our marketing cost last month?* | `ea:disambiguatesTo` — the agent asks | It silently picks one of four cost concepts and answers a question nobody asked |
+| *Top 5 campaigns by ROAS* | `MEASURE(weighted_roas)` | `AVG(ROAS)` weights a ₹2,000 campaign like a ₹2 Cr one and reorders the ranking |
+| *Total inventory value across all dates* | Grain guard → `is_current_snapshot` | A confident number roughly 365× too large |
+| *Which plants are inefficient this week?* | Disambiguation + 0–100 threshold | `< 0.70` on a 0–100 column returns zero rows — "no plants underperforming" |
+| *Which lines does Manesar run?* | `kg_find_node` → `kg_neighbors` | An invented JOIN across tables that share no key |
+| *Board risk snapshot* | Three views, three grains, no UNION | One blended table where a percentage renders as currency |
+
+The full suite is **45 questions** — 8 PRD samples, 7 disambiguation traps, and 28 in C-suite voice
+across revenue, cost, customers, strategy, execution and risk. Re-run after every deploy.
+
+---
+
+## 8. How correctness is proven
+
+Five independent checks. Each catches what the others structurally cannot.
+
+| Check | Command | Catches |
+| --- | --- | --- |
+| **Generator consistency** | `generate.py --check` | a generated artifact drifting from the ontology |
+| **Model consistency** | `test_generate.py` | an internally incoherent ontology — dangling domain/range, missing binding |
+| **Live binding check** | `verify_bindings.py` | a `MEASURE()` the ontology names that does not exist in the deployed view |
+| **SQL correctness** | `./deploy.sh test-metrics` | KPI-formula, dim-uniqueness, fan-out, snapshot-grain and graph-integrity regressions |
+| **Agent behavior** | `benchmark_questions.md` | wrong routing, missing clarification, trap answers |
+
+- Only the warehouse knows whether a measure really exists — which is why the live check is separate.
+- It **earned its place on the first run**, finding nine bindings pointing at identifiers that do not exist.
+- The SQL suite is **independent of the agent**: it catches a regressed formula even if nobody has
+  asked the matching question yet.
+
+---
+
+## 9. Open items
+
+### Open hazard — metric-view naming split
+
+- The two `supply_chain` views were rebuilt in the workspace with **Title Case** measure names
+  (`Avg Days of Supply`, `Total Cost of Poor Quality`); the repo's `.sql` files still declare
+  **snake_case**. The other three views agree in both places.
+- Bindings currently **track deployed reality**, because that is what the agent queries.
+- Running `apply-metrics` with the metric-view `CREATE` tasks re-enabled would overwrite the
+  deployed views, rename every measure back, and break all nine bindings — **which is why the apply
+  job no longer recreates views**.
+- **Resolution needed:** pick one convention, make the `.sql` files match, re-run `verify_bindings.py`.
+
+### Relations the gold layer cannot support yet
+
+| Missing relation | Blocked because |
+| --- | --- |
+| `Campaign → SalesOrder` | no bridge table joins marketing spend to orders, so revenue attribution is out of reach |
+| `Plant → Part` | no fact links a plant or line to the parts it consumes; Plant→Model and Supplier→Part exist, the middle hop does not |
+| `Warehouse → Plant` | `dim_warehouse` carries no confirmed plant reference |
+
+Each becomes an object property in the ontology the moment the backing table lands — the generator
+picks it up with **no other change**.
+
+### Deliberately not implemented
+
+| Item | Status | Reason |
+| --- | --- | --- |
+| UC Domains / Glossary Pages REST upsert | Deferred | API not GA; UC tags cover it as code |
+| Genie Ontology product | Prep only | grants and checklist ready; product not installed |
+| OWL 2 RL reasoning / triple store | Not planned | the Delta property graph is the chosen path |
+| Neo4j sync / Bloom | Not planned | Delta stays the system of record |
+| Liquid Clustering on gold facts | Drafted | needs the gold-owning team's sign-off; wired into no job |
+| Prod Genie identifiers | Pending | space file still points at `gold_dev.*` |
+
+---
+
+## 10. Operating the system
+
+### How to change meaning safely
+
+| To change | Edit | Then run |
+| --- | --- | --- |
+| KPI formula, grain, join | `metrics_*.sql` | the `CREATE OR REPLACE` on the warehouse, then `verify_bindings.py` |
+| Term meaning, synonym, ambiguity, binding | `exec_analyst.ttl` | `regen-tags` → `deploy` → `apply-metrics` |
+| New typed relation | `exec_analyst.ttl` — object property + `ea:edgeFrom` | `regen-tags` → `deploy` → `apply-metrics` |
+| Agent policy prose | `geniespace.json`, above the generated marker | `deploy` |
+
+- **Never hand-edit a generated file** — the next `regen-tags` overwrites it.
+- **Never make a silent Genie UI edit** — it is overwritten on the next deploy and leaves no review trail.
+
+### Deployment assets
 
 | Asset | Role |
 | --- | --- |
-| `databricks.yml` | Bundle targets `dev` / `prod`, warehouse, catalog, Genie permission group |
-| `resources/metric_views_job.yml` | Ordered job: create views → tags → grants → **materialize KG** → grant KG → drop legacy |
-| `resources/executive_analyst.genie_space.yml` | Deploys Genie space |
-| `deploy.sh` | `validate` \| `deploy` \| `apply-metrics` \| `regen-tags` (tags + OWL) \| `open` \| `destroy` |
+| `databricks.yml` | bundle targets dev/prod, warehouse, `gold_catalog`, permission group |
+| `resources/metric_views_job.yml` | ordered apply: `materialize_kg` → `grant_kg` → `kg_functions` → `tag_metric_views` → `grant_metric_views` → `drop_legacy` |
+| `resources/validate_metric_views_job.yml` | read-only assertion suite |
+| `deploy.sh` | `validate` \| `deploy` \| `apply-metrics` \| `test-metrics` \| `regen-tags` \| `open` \| `destroy` |
+
+Grants go to `genie_space_permission_group` (default `users`) on the five views, the tagged
+dimensions, and `ontology.kg_*`.
 
 ---
 
-## Phase 2 — Ontology lite (implemented)
-
-Ontology here means **shared meaning of terms and entities**, not OWL.
-
-### Step status
-
-| Step | Status | What landed in the repo |
-| --- | --- | --- |
-| **0** Entity substrate | Done | Dim joins + `column_map.md` |
-| **1** UC Domains | Skipped | `domain` tag on each metric view instead |
-| **2** Glossary | Done (Git) | [`src/ontology/glossary.yml`](../src/ontology/glossary.yml) |
-| **3** Wire terms → assets | Done (as code) | UC tags via `tag_metric_views.sql` |
-| **4** Genie Knowledge Store | Done | Thin instructions + certified snippets + 15 benchmarks |
-| **5** As-code packaging | Done | YAML + generated tags; REST glossary upsert **deferred** (API not GA) |
-| **6** Genie Ontology prep | Done as prep | Grants SQL + checklist; product **not** installed |
-| **7** OWL | TBox generated | [`exec_analyst.ttl`](../src/ontology/exec_analyst.ttl) from glossary + [`graph.yml`](../src/ontology/graph.yml) via [`generate_owl.py`](../src/ontology/generate_owl.py); not deployed; Protégé review only |
-
-### Glossary (`glossary.yml`)
-
-Git source of truth for definitions, owners, `related` / `not_same_as`, and `links_to` (view measure/field or dim table).
-
-**Measures / concepts:** Revenue, Bookings, Discount, Delivered order, ROAS, CPL, Conversion (marketing), OEE, Downtime, Stockout risk, Days of supply, Inventory turnover, PPM, COPQ.
-
-**Ambiguous (no asset links):** Cost, Efficiency — Genie policy should clarify.
-
-**Entities:** Plant, Production line, Part, Warehouse, Supplier, Dealer, Model, Campaign, Channel, Segment.
-
-Catalog Explorer Glossary Pages Assign remains **optional / deferred** ([`wiring_checklist.md`](../src/ontology/wiring_checklist.md)).
-
-### UC tags (generated)
-
-[`generate_tag_sql.py`](../src/ontology/generate_tag_sql.py) regenerates [`tag_metric_views.sql`](../src/metric_views/tag_metric_views.sql) from `links_to` so tags cannot drift from YAML.
-
-```bash
-./deploy.sh regen-tags
-# or: python src/ontology/generate_tag_sql.py --check
-#     python src/ontology/generate_owl.py --check
-```
-
-Tags applied on apply-metrics:
-
-| Tag | Purpose |
-| --- | --- |
-| `domain` | revenue \| marketing \| manufacturing \| inventory \| supplier_quality |
-| `grain` | order \| campaign_flight \| production_row \| snapshot \| inspection |
-| `kpi` | `true` on metric views |
-| `glossary_source` | `src/ontology/glossary.yml` |
-| `glossary_terms` | Comma-separated term ids linked to that view/dim |
-
-### OWL TBox (Step 7 seed)
-
-[`generate_owl.py`](../src/ontology/generate_owl.py) regenerates [`exec_analyst.ttl`](../src/ontology/exec_analyst.ttl) from [`glossary.yml`](../src/ontology/glossary.yml) + [`graph.yml`](../src/ontology/graph.yml) (IRI `https://focaloid.com/ontology/executive-analyst#`, prefix `ea:`). Classes, `skos:related`, `owl:disjointWith`, `ea:realizedBy*` annotations, and **object properties** (`hasLine`, `stockedAt`, …) with `rdfs:domain` / `rdfs:range`. No ABox individuals in Turtle; no Databricks deploy of the TTL. Protégé: open to review types; never save over the file. `pip install -r src/ontology/requirements.txt`.
-
-### Genie Knowledge Store (Step 4)
-
-[`src/executive_analyst.geniespace.json`](../src/executive_analyst.geniespace.json):
-
-- **Data sources:** five `metrics_*` + five facts for drill (legacy `fact_inventory_snapshot_metric_view` **removed**).
-- **Policy:** metric views first; never cross-domain JOIN; ask on ambiguous cost/efficiency; INR / Cr / Lakh formatting.
-- **Certified filters:** high stockout (+ current snapshot), restock candidates, OEE below 70%, delivered orders.
-- **Certified measures:** PPM, average OEE, weighted ROAS, COPQ, total revenue, cost per lead, delivered order revenue.
-- **Sample questions:** 15 chips aligned with the benchmark suite.
-
-Eval suite: [`src/ontology/benchmark_questions.md`](../src/ontology/benchmark_questions.md).
-
-### Grants & Genie Ontology prep (Step 6)
-
-[`grant_metric_views.sql`](../src/metric_views/grant_metric_views.sql) grants `SELECT` on the five metric views and ten tagged dims to `genie_space_permission_group` (default `users`).
-
-Operational checklist: [`src/ontology/genie_ontology_prep.md`](../src/ontology/genie_ontology_prep.md) (tags, comments, `SHOW GRANTS`, Table Insights via real Genie usage, enable product Ontology only when workspace preview exists).
-
----
-
-## Phase 3 — Delta property graph (implemented)
-
-Navigation graph only. KPI math stays in `metrics_*`. **Not** added to the Genie space.
-
-| Asset | Role |
-| --- | --- |
-| [`graph.yml`](../src/ontology/graph.yml) | Object-property SoR (`rel`, domain/range class ids) |
-| [`materialize_kg.sql`](../src/ontology/materialize_kg.sql) | `kg_nodes` + `kg_edges` (schema `{catalog}.ontology` must already exist) |
-| [`grant_kg.sql`](../src/ontology/grant_kg.sql) | `GRANT USAGE` / `SELECT` to reader group |
-| [`kg_queries.sql`](../src/ontology/kg_queries.sql) | Neighborhood examples (SQL editor; not a job task) |
-
-**Nodes:** Plant, ProductionLine, Model, Dealer, Part, Warehouse, Supplier, Campaign, Channel, Segment — from `dim.*`, with optional KPI properties (OEE, stockout, PPM/COPQ, revenue, weighted ROAS) using aggregations that match metric-view expressions.
-
-**Edges (`rel`):** `hasLine`, `produces`, `soldBy`, `stockedAt` (current snapshot only), `supplies`, `runsOnChannel`, `runsOnSegment` — distinct key pairs from facts.
-
-Job tasks on `apply_metric_views`: `materialize_kg` → `grant_kg` → `tag_metric_views` → `grant_metric_views` → `drop_legacy_mv_executive`. Metric-view `CREATE OR REPLACE` is not in the job unless the KPI YAML changes.
-
-**View relationships:** Protégé on TTL = TBox; SQL on `kg_nodes`/`kg_edges` = ABox.
-
----
-
-## How to change meaning safely
-
-| Change | Edit | Then |
-| --- | --- | --- |
-| KPI formula / grain / join | `src/metric_views/metrics_*.sql` | `deploy` + `apply-metrics` |
-| Term definition or `links_to` | `src/ontology/glossary.yml` | `regen-tags` (tags SQL + OWL Turtle) → `deploy` → `apply-metrics` |
-| Typed edge / object property | `src/ontology/graph.yml` (+ `materialize_kg.sql` if new fact pair) | `regen-tags` → `deploy` → `apply-metrics` |
-| Agent policy / certified SQL | `src/executive_analyst.geniespace.json` | `deploy` |
-| Reader group for SELECT | `genie_space_permission_group` in `databricks.yml` | `deploy` + `apply-metrics` |
-
-Always prefer a **Git PR** over silent Genie UI edits.
-
----
-
-## How to verify
-
-1. **Tags:** SQL in `wiring_checklist.md` / `genie_ontology_prep.md` against `gold_dev.information_schema.table_tags`.
-2. **Grants:** `SHOW GRANTS ON VIEW gold_dev.…metrics_*`; `SHOW GRANTS ON TABLE gold_dev.ontology.kg_nodes`.
-3. **Genie behavior:** run questions in `benchmark_questions.md` (especially traps: cost, efficiency, ROAS avg, conversions ≠ delivered, revenue ≠ bookings, snapshot summing).
-4. **Tag/YAML sync:** `python src/ontology/generate_tag_sql.py --check`.
-5. **OWL/YAML sync:** `python src/ontology/generate_owl.py --check` (glossary + graph).
-6. **KG:** row counts by `node_type` / `rel`; orphan edge check and neighborhood samples in [`kg_queries.sql`](../src/ontology/kg_queries.sql). No Campaign–Order `rel`.
-
-Observed in smoke testing: cross-domain “how is the business doing?” and OEE/plant naming bind correctly; ambiguous **efficiency** may still skip clarification (policy gap, not missing metric-view math).
-
----
-
-## Explicitly not implemented
-
-- Formal Unity Catalog **Domains** / Glossary Pages REST upsert
-- **Genie Ontology** product install (prep only)
-- **OntoBricks** / RDF triples / OWL 2 RL reasoning (Delta property graph is the Phase 3 path; OntoBricks still optional later)
-- Campaign → Order **bridge** edges (blocked until gold has a bridge table)
-- Neo4j sync / Bloom (optional later; Delta remains SoR)
-- Prod Genie JSON identifiers switched to catalog `gold` (still `gold_dev.*` in the space file)
-- KG tables as Genie data sources
-
----
-
-## Repo map (ontology + semantics)
-
-| Path | Role |
-| --- | --- |
-| `src/metric_views/metrics_*.sql` | Semantic layer KPI definitions |
-| `src/metric_views/column_map.md` | Confirmed dim keys / name columns |
-| `src/metric_views/tag_metric_views.sql` | Generated UC tags |
-| `src/metric_views/grant_metric_views.sql` | `GRANT SELECT` for reader group |
-| `src/ontology/glossary.yml` | Glossary source of truth |
-| `src/ontology/graph.yml` | Object properties for TBox + `kg_edges.rel` |
-| `src/ontology/materialize_kg.sql` | Phase 3 `kg_nodes` / `kg_edges` |
-| `src/ontology/grant_kg.sql` | KG grants |
-| `src/ontology/kg_queries.sql` | Neighborhood SQL examples |
-| `src/ontology/generate_tag_sql.py` | Tag SQL generator |
-| `src/ontology/generate_owl.py` | OWL Turtle generator (`ea:` / Focaloid IRI) |
-| `src/ontology/exec_analyst.ttl` | GENERATED OWL TBox (Git-only; Protégé review) |
-| `src/ontology/requirements.txt` | PyYAML, owlready2, rdflib |
-| `src/ontology/benchmark_questions.md` | Eval questions |
-| `src/ontology/genie_ontology_prep.md` | Step 6 checklist |
-| `src/ontology/wiring_checklist.md` | Optional UI Assign (deferred) |
-| `src/executive_analyst.geniespace.json` | Genie Knowledge Store |
-| `docs/ontology-uc-glossary-domains.md` | Phase 2 runbook |
-| This doc | Implementation summary of what was built |
-
----
-
-*Dev first on `gold_dev`. Promote metric views, tags, grants, KG tables, and Genie to prod when catalog ownership and identifiers are ready.*
+*Currently running on `gold_dev`. Promote views, tags, grants, graph tables and the Genie space to
+`gold` when catalog ownership and identifiers are ready.*

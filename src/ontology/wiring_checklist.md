@@ -1,6 +1,6 @@
 # Glossary → asset wiring checklist
 
-**System of record for wiring:** Unity Catalog tags (`glossary_terms`, `glossary_source`) applied by [`../metric_views/tag_metric_views.sql`](../metric_views/tag_metric_views.sql), generated from [`glossary.yml`](glossary.yml) by [`generate_tag_sql.py`](generate_tag_sql.py).
+**System of record for wiring:** Unity Catalog tags (`glossary_terms`, `glossary_source`) applied by [`../metric_views/tag_metric_views.sql`](../metric_views/tag_metric_views.sql), generated from [`exec_analyst.ttl`](exec_analyst.ttl) by [`generate.py`](generate.py).
 
 **Catalog Explorer Glossary / Pages Assign — deferred.** Databricks Glossary is not GA in this workspace, and there is no public REST/SDK upsert. Do **not** invent a parallel glossary store. Check a box below only when Glossary Pages exist **and** you have assigned the term in the UI (optional mirror). Tags alone satisfy Step 3 / Step 5.
 
@@ -69,7 +69,7 @@ ORDER BY schema_name, table_name, tag_name;
 
 ## When Glossary Pages become available
 
-1. Create terms from `glossary.yml` in Catalog Explorer (or use the REST upsert job when Databricks ships a public Glossary API).
+1. Create terms from `exec_analyst.ttl` (KPI and entity classes) in Catalog Explorer (or use the REST upsert job when Databricks ships a public Glossary API).
 2. Assign each term to the assets listed above.
 3. Check the matching boxes in this file.
 4. Keep Git as source of truth — edit YAML first, then mirror to the UI.

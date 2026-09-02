@@ -18,7 +18,8 @@ variables:
     description: >
       Workspace / account group for Genie space ACL and for GRANT SELECT on the five
       metrics_* views plus linked dim tables (apply_metric_views job param grant_group).
-    default: users
+      Use 'account users' for all UC users, or a specific group name.
+    default: account users
 
 targets:
   dev:

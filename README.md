@@ -5,7 +5,7 @@ Deployable [Declarative Automation Bundle](https://docs.databricks.com/aws/en/de
 1. **Five Unity Catalog metric views** (semantic layer) applied by a warehouse job
 2. The **Executive Analyst** Genie space as code, based on [`docs/prd.md`](docs/prd.md)
 
-Semantic-layer design: [`docs/semantic-layer-ontology-knowledge-graph.md`](docs/semantic-layer-ontology-knowledge-graph.md). **What was built:** [`docs/semantic-layer-ontology-implementation.md`](docs/semantic-layer-ontology-implementation.md). Ontology runbook + assets: [`docs/ontology-uc-glossary-domains.md`](docs/ontology-uc-glossary-domains.md) · [`src/ontology/glossary.yml`](src/ontology/glossary.yml) · [`src/ontology/benchmark_questions.md`](src/ontology/benchmark_questions.md) · [`src/ontology/genie_ontology_prep.md`](src/ontology/genie_ontology_prep.md).
+**What was built:** [`docs/semantic-layer-ontology-implementation.md`](docs/semantic-layer-ontology-implementation.md). Ontology source of truth + assets: [`src/ontology/exec_analyst.ttl`](src/ontology/exec_analyst.ttl) · [`src/ontology/benchmark_questions.md`](src/ontology/benchmark_questions.md) · [`src/ontology/genie_ontology_prep.md`](src/ontology/genie_ontology_prep.md).
 
 Genie space bundle support requires **Databricks CLI ≥ 1.3.0** and the **`direct` deployment engine** (already set in `databricks.yml`).
 
@@ -13,11 +13,13 @@ Genie space bundle support requires **Databricks CLI ≥ 1.3.0** and the **`dire
 
 | Resource | Path | Role |
 | --- | --- | --- |
-| `apply_metric_views` job | [`resources/metric_views_job.yml`](resources/metric_views_job.yml) | Tags, grants, Phase 3 `ontology.kg_nodes` / `kg_edges`, drop legacy `mv_executive_*` (does not recreate `metrics_*` views) |
+| `apply_metric_views` job | [`resources/metric_views_job.yml`](resources/metric_views_job.yml) | Materializes the knowledge graph + traversal functions, tags, grants, drops legacy `mv_executive_*` (does not recreate `metrics_*` views) |
 | `validate_metric_views` job | [`resources/validate_metric_views_job.yml`](resources/validate_metric_views_job.yml) | Read-only KPI-formula, dim-uniqueness, and fan-out assertions on the five `metrics_*` views ([`src/tests/`](src/tests/)) |
-| Metric view SQL | [`src/metric_views/`](src/metric_views/) | YAML 1.1 definitions + [`tag_metric_views.sql`](src/metric_views/tag_metric_views.sql) + [`grant_metric_views.sql`](src/metric_views/grant_metric_views.sql) |
-| Glossary + graph (Git) | [`src/ontology/glossary.yml`](src/ontology/glossary.yml) · [`graph.yml`](src/ontology/graph.yml) | Terms + object properties; `./deploy.sh regen-tags` refreshes tags SQL + OWL; UI Assign deferred ([`wiring_checklist.md`](src/ontology/wiring_checklist.md)) |
-| Knowledge graph (Delta) | [`src/ontology/materialize_kg.sql`](src/ontology/materialize_kg.sql) | `{catalog}.ontology.kg_nodes` / `kg_edges` — instance graph for navigation (not a Genie source) |
+| Metric view SQL | [`src/metric_views/`](src/metric_views/) | YAML 1.1 definitions + [`tag_metric_views.sql`](src/metric_views/tag_metric_views.sql) (generated) + [`grant_metric_views.sql`](src/metric_views/grant_metric_views.sql) |
+| **Ontology (Git, source of truth)** | [`src/ontology/exec_analyst.ttl`](src/ontology/exec_analyst.ttl) | OWL Turtle: classes, KPIs, enums, ambiguous terms, object properties, each annotated with its Databricks binding. `./deploy.sh regen-tags` regenerates every artifact below from this file — none of them are hand-edited. |
+| Knowledge graph (Delta) | [`src/ontology/materialize_kg.sql`](src/ontology/materialize_kg.sql) + [`grant_kg.sql`](src/ontology/grant_kg.sql) | `{catalog}.ontology.kg_nodes` / `kg_edges` — the ABox, generated from the TTL's bound classes and object properties |
+| KG traversal tools | [`src/ontology/kg_functions.sql`](src/ontology/kg_functions.sql) | `kg_neighbors` / `kg_find_node` UC functions; attached to the Genie space under `instructions.sql_functions` (not `data_sources`) so the agent can answer relationship questions |
+| HTML reference | [`ontology_reference.html`](../ontology_reference.html) | Browsable class/property page, generated from the TTL — the artifact for governance review |
 | Genie space | [`resources/executive_analyst.genie_space.yml`](resources/executive_analyst.genie_space.yml) + [`src/executive_analyst.geniespace.json`](src/executive_analyst.geniespace.json) | Thin agent: metric views for KPIs, facts for drill |
 
 ### Metric views (catalog = `gold_dev` in dev, `gold` in prod)
@@ -65,16 +67,17 @@ Warehouse identity needs:
 
 `apply-metrics` also grants `SELECT` on the five `metrics_*` views, linked dims, and `ontology.kg_*` to `genie_space_permission_group` (default `users`). See [`src/ontology/genie_ontology_prep.md`](src/ontology/genie_ontology_prep.md).
 
-### Knowledge graph (Phase 3)
+### Knowledge graph
 
 | Table | Role |
 | --- | --- |
-| `{catalog}.ontology.kg_nodes` | Entity instances (Plant, Part, …) + latest KPI properties |
-| `{catalog}.ontology.kg_edges` | Typed edges (`hasLine`, `stockedAt`, `supplies`, …) from fact key pairs |
+| `{catalog}.ontology.kg_nodes` | Entity instances (Plant, Part, …), one row per bound dim row |
+| `{catalog}.ontology.kg_edges` | Typed edges (`plantHasLine`, `partStockedAt`, `supplierSuppliesPart`, …) from fact key pairs |
+| `{catalog}.ontology.kg_neighbors` / `kg_find_node` | UC functions over the two tables above — the agent-facing traversal surface |
 
-- **TBox (types):** Protégé on [`src/ontology/exec_analyst.ttl`](src/ontology/exec_analyst.ttl) (classes + object properties from `glossary.yml` + `graph.yml`)
+- **TBox (types):** [`src/ontology/exec_analyst.ttl`](src/ontology/exec_analyst.ttl) — classes, enums, object properties, each carrying its Databricks binding
 - **ABox (instances):** SQL against `kg_nodes` / `kg_edges` — examples in [`src/ontology/kg_queries.sql`](src/ontology/kg_queries.sql)
-- Not added to the Genie space; KPI math stays in `metrics_*`. No Campaign→Order edges until gold has a bridge table.
+- KPI math stays in `metrics_*`; the graph is for relationships, not aggregation. Known gaps (Campaign→SalesOrder, Plant→Part, Warehouse→Plant) are documented at the bottom of the TTL — add the object property there the moment a backing table exists.
 
 Override catalog with `--gold-catalog` or `--var gold_catalog=...`. Dev defaults to `gold_dev`; prod target defaults to `gold`.
 
@@ -125,7 +128,7 @@ resources/metric_views_job.yml                # apply_metric_views (+ tag + gran
 resources/validate_metric_views_job.yml       # validate_metric_views (read-only SQL test suite)
 src/executive_analyst.geniespace.json         # Genie: metric views + facts, thin instructions
 src/metric_views/metrics_*.sql                # CREATE OR REPLACE VIEW WITH METRICS
-src/metric_views/tag_metric_views.sql         # UC tags (GENERATED from glossary.yml)
+src/metric_views/tag_metric_views.sql         # UC tags (GENERATED from exec_analyst.ttl)
 src/metric_views/grant_metric_views.sql       # GRANT SELECT on metrics_* + dims (Step 6)
 src/metric_views/drop_legacy_mv_executive.sql # DROP legacy mv_executive_* after rename
 src/metric_views/column_map.md                # confirmed dim keys and joins
@@ -134,15 +137,14 @@ src/tests/README.md                           # test pattern + benchmark_questio
 src/clustering/discover_clustering_candidates.sql # read-only size/cardinality discovery
 src/clustering/clustering_candidates.md       # proposed CLUSTER BY keys + sign-off checklist
 src/clustering/cluster_gold_facts.sql         # drafted ALTER TABLE ... CLUSTER BY (owner sign-off required)
-src/ontology/glossary.yml                     # glossary source of truth (terms)
-src/ontology/graph.yml                        # object properties (hasLine, stockedAt, …)
-src/ontology/materialize_kg.sql               # CREATE ontology.kg_nodes / kg_edges
-src/ontology/grant_kg.sql                     # GRANT SELECT on KG tables
-src/ontology/kg_queries.sql                   # neighborhood SQL examples (not a job task)
-src/ontology/generate_tag_sql.py              # regenerates tag_metric_views.sql from links_to
-src/ontology/generate_owl.py                  # regenerates exec_analyst.ttl from glossary + graph
-src/ontology/exec_analyst.ttl                 # GENERATED OWL Turtle (Git-only; Protégé review)
-src/ontology/requirements.txt                 # PyYAML, owlready2, rdflib for ontology compilers
+src/ontology/exec_analyst.ttl                 # ONTOLOGY SOURCE OF TRUTH (classes, KPIs, enums, object properties + bindings)
+src/ontology/generate.py                      # exec_analyst.ttl -> tags SQL + KG SQL + KG functions + HTML reference
+src/ontology/materialize_kg.sql               # GENERATED: CREATE ontology.kg_nodes / kg_edges
+src/ontology/grant_kg.sql                     # GENERATED: GRANT SELECT on KG tables
+src/ontology/kg_functions.sql                 # GENERATED: kg_neighbors / kg_find_node UC functions (agent tools)
+src/ontology/kg_queries.sql                   # GENERATED: neighborhood SQL examples (not a job task)
+src/ontology/requirements.txt                 # rdflib, for generate.py
+ontology_reference.html                       # GENERATED: browsable class/property reference (repo root)
 src/ontology/wiring_checklist.md              # optional Catalog Explorer Assign (deferred)
 src/ontology/benchmark_questions.md           # Genie Knowledge Store eval suite (Step 4)
 src/ontology/genie_ontology_prep.md           # Step 6 readiness (grants, popularity, preview)
@@ -161,15 +163,19 @@ deploy.sh                                     # validate | deploy | apply-metric
 ./deploy.sh apply-metrics --target dev   # tags + grants + KG
 ```
 
-**Glossary terms / links or graph object properties:** edit `src/ontology/glossary.yml` and/or `src/ontology/graph.yml`, then:
+**Ontology (KPI concepts, entities, enums, object properties):** edit `src/ontology/exec_analyst.ttl` — the source of truth — then:
 
 ```bash
-./deploy.sh regen-tags                   # refresh tag_metric_views.sql + exec_analyst.ttl
+./deploy.sh regen-tags                   # refresh tags SQL, KG SQL, KG functions, HTML reference
 ./deploy.sh deploy --target dev
-./deploy.sh apply-metrics --target dev   # apply UC tags + grants + refresh kg_*
+./deploy.sh apply-metrics --target dev   # apply UC tags + grants + rebuild kg_*
 ```
 
-OWL Turtle (`src/ontology/exec_analyst.ttl`) is Git-only — not deployed to Databricks. Open it in Protégé to review **types** (classes + object properties); never save over the generated file. Instance relationships live in `ontology.kg_nodes` / `kg_edges` — query via [`kg_queries.sql`](src/ontology/kg_queries.sql). Dependencies: `pip install -r src/ontology/requirements.txt`.
+Everything generate.py writes (`tag_metric_views.sql`, `materialize_kg.sql`, `grant_kg.sql`,
+`kg_functions.sql`, `kg_queries.sql`, `ontology_reference.html`) is a build artifact — never hand-edit
+it, edit the TTL and regenerate. Open the TTL in Protégé to review types; it stays Git-only, never
+deployed as-is. Instance relationships live in `ontology.kg_nodes` / `kg_edges` — query via
+[`kg_queries.sql`](src/ontology/kg_queries.sql). Dependencies: `pip install -r src/ontology/requirements.txt`.
 
 **Genie space:** edit `src/executive_analyst.geniespace.json`, then `./deploy.sh deploy`. Genie JSON identifiers stay on `gold_dev.*` until you deliberately switch them for prod. After Genie changes, seed Table Insights by running [`benchmark_questions.md`](src/ontology/benchmark_questions.md).
 
