@@ -1,0 +1,943 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Three Ways to Ground Genie Agent — Brief</title>
+<style>
+  :root{
+    --ink:#14181d; --ink-2:#3c454e; --ink-3:#6a747e;
+    --rule:#d9dde1; --rule-2:#edf0f2;
+    --paper:#fbfaf8; --card:#ffffff;
+    --accent:#c2410c;
+    --ok:#0f7b3d; --part:#a35a00; --bad:#b42318;
+    --band:#f4f2ee;
+    --serif: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Cascadia Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--serif); font-size:10.5pt; line-height:1.55;
+  }
+  .sheet{max-width:190mm; margin:0 auto; padding:16mm 14mm 22mm}
+
+  /* ---------- type ---------- */
+  p{margin:0 0 .72em}
+  .lede{font-size:12.5pt; line-height:1.5; color:var(--ink-2)}
+  strong{font-weight:700; color:var(--ink)}
+  em{font-style:italic}
+  code, .mono{font-family:var(--mono); font-size:.86em; background:var(--rule-2); padding:.08em .3em; border-radius:2px}
+  .eyebrow{
+    font-family:var(--sans); font-size:7.6pt; font-weight:700;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3);
+  }
+  h1{
+    font-family:var(--sans); font-size:34pt; line-height:1.04; font-weight:700;
+    letter-spacing:-.022em; margin:.28em 0 .34em;
+  }
+  h2{
+    font-family:var(--sans); font-size:17pt; line-height:1.2; font-weight:700;
+    letter-spacing:-.014em; margin:0 0 .5em;
+  }
+  h3{
+    font-family:var(--sans); font-size:11.5pt; font-weight:700;
+    letter-spacing:-.008em; margin:1.5em 0 .5em;
+  }
+  h4{
+    font-family:var(--sans); font-size:7.8pt; font-weight:700;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3);
+    margin:1.4em 0 .45em;
+  }
+  .sec-head{display:flex; gap:.7em; align-items:baseline; margin:0 0 .9em}
+  .sec-num{
+    font-family:var(--sans); font-size:17pt; font-weight:700;
+    color:var(--accent); font-variant-numeric:tabular-nums; letter-spacing:-.02em;
+  }
+  section{margin:0 0 2.2em}
+
+  /* ---------- cover ---------- */
+  .cover{border-bottom:2.5px solid var(--ink); padding-bottom:1.3em; margin-bottom:1.5em}
+  .stats{
+    display:grid; grid-template-columns:repeat(5,1fr);
+    border-top:1px solid var(--rule); border-bottom:1px solid var(--rule);
+    margin:1.4em 0 0;
+  }
+  .stat{padding:.7em .8em .75em; border-left:1px solid var(--rule-2)}
+  .stat:first-child{border-left:0; padding-left:0}
+  .stat .k{
+    font-family:var(--sans); font-size:6.9pt; font-weight:700; letter-spacing:.13em;
+    text-transform:uppercase; color:var(--ink-3); display:block; margin-bottom:.35em; line-height:1.3;
+  }
+  .stat .v{font-family:var(--sans); font-size:15pt; font-weight:700; letter-spacing:-.02em}
+  .stat .v.sm{font-size:10.5pt}
+
+  .finding{background:var(--band); border-left:3px solid var(--accent); padding:1.1em 1.2em; margin:1.5em 0 0}
+  .finding h4{margin-top:0; color:var(--accent)}
+  .finding .claim{font-family:var(--sans); font-size:13pt; font-weight:700; line-height:1.28; letter-spacing:-.014em; margin:0 0 .7em}
+
+  /* ---------- accuracy bars ---------- */
+  .bars{margin:.6em 0 0}
+  .bar-row{display:grid; grid-template-columns:15em 1fr 4.6em 4.6em; align-items:center; gap:.7em; padding:.42em 0; border-bottom:1px solid var(--rule-2)}
+  .bar-row .lbl{font-family:var(--sans); font-size:8.6pt; font-weight:600}
+  .bar-row .lbl b{display:inline-block; width:1.15em; color:var(--accent)}
+  .track{background:var(--rule-2); height:15px; position:relative}
+  .fill{height:100%; background:var(--ink)}
+  .fill.a{background:#b9c0c6}
+  .fill.b{background:#7d8890}
+  .fill.c{background:var(--accent)}
+  .bar-row .pct{font-family:var(--sans); font-size:10pt; font-weight:700; text-align:right; font-variant-numeric:tabular-nums}
+  .bar-row .of{font-family:var(--sans); font-size:8pt; color:var(--ink-3); text-align:right}
+
+  /* ---------- tables ---------- */
+  table{width:100%; border-collapse:collapse; font-family:var(--sans); font-size:8.4pt; line-height:1.4; margin:.5em 0 .9em}
+  th{
+    text-align:left; vertical-align:bottom; font-size:6.9pt; font-weight:700;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3);
+    border-bottom:1.5px solid var(--ink); padding:.45em .55em .35em;
+  }
+  td{vertical-align:top; padding:.5em .55em; border-bottom:1px solid var(--rule-2)}
+  td:first-child, th:first-child{padding-left:0}
+  tbody tr:last-child td{border-bottom:1px solid var(--rule)}
+  td.k{font-weight:600; color:var(--ink)}
+  .truth{font-family:var(--mono); font-size:7.5pt; color:var(--ink-2)}
+  .m{font-weight:700; padding-right:.15em}
+  .m.ok{color:var(--ok)} .m.part{color:var(--part)} .m.bad{color:var(--bad)}
+  .num{font-variant-numeric:tabular-nums}
+  .legend{font-family:var(--sans); font-size:6.9pt; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); margin:0 0 .1em}
+
+  /* ---------- question block ---------- */
+  .q{display:grid; grid-template-columns:2.6em 1fr; gap:.6em; align-items:start; margin:0 0 1em}
+  .q .tag{font-family:var(--sans); font-size:15pt; font-weight:700; color:var(--accent); letter-spacing:-.02em}
+  .q .txt{font-family:var(--sans); font-size:15pt; font-weight:600; line-height:1.24; letter-spacing:-.014em}
+
+  /* ---------- scorecards ---------- */
+  .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:.7em; margin:.6em 0 1.2em}
+  .card{background:var(--card); border:1px solid var(--rule); padding:.85em .9em .9em}
+  .card .cfg{font-family:var(--sans); font-size:8.6pt; font-weight:700; line-height:1.25; margin-bottom:.12em}
+  .card .cfg b{color:var(--accent)}
+  .card .sub{font-family:var(--sans); font-size:7.2pt; color:var(--ink-3); margin-bottom:.7em}
+  .card .score{font-family:var(--sans); font-size:23pt; font-weight:700; letter-spacing:-.03em; line-height:1; font-variant-numeric:tabular-nums}
+  .card .verd{font-family:var(--sans); font-size:6.9pt; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin:.5em 0 0; line-height:1.35}
+  .card .verd.ok{color:var(--ok)} .card .verd.part{color:var(--part)} .card .verd.bad{color:var(--bad)}
+  .card.win{border-color:var(--accent); border-width:1.5px}
+
+  /* ---------- rows, misc ---------- */
+  .rows{margin:.2em 0 .9em}
+  .row{display:grid; grid-template-columns:9.4em 1fr; gap:.8em; padding:.42em 0; border-top:1px solid var(--rule-2)}
+  .row:first-child{border-top:0}
+  .row .rk{font-family:var(--sans); font-size:6.9pt; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3); padding-top:.2em; line-height:1.4}
+  .row .rv{font-size:9.6pt; line-height:1.5}
+  /* Comparison strip: the three setups side by side at one scale, so the shapes
+     of the answers are directly comparable. c3 = three across, c2 = two across. */
+  .shots{display:grid; gap:.55em; margin:.9em 0 1em; align-items:start}
+  .shots.c3{grid-template-columns:repeat(3,1fr)}
+  .shots.c2{grid-template-columns:repeat(2,1fr)}
+  .shots .shot{margin:0}
+  .shots .cap{display:block}
+  .shots .cap .f{display:block; margin-bottom:.15em}
+  .shot-hd{
+    font-family:var(--sans); font-size:7.2pt; font-weight:700; line-height:1.25;
+    padding:.4em .5em .35em; border-bottom:1px solid var(--rule-2);
+  }
+  .shot-hd b{color:var(--accent)}
+  .shot{margin:.9em 0 1em; border:1px solid var(--rule); background:#fff}
+  .shot img{display:block; width:100%; height:auto}
+  .shot .cap{
+    font-family:var(--sans); font-size:7pt; color:var(--ink-3); padding:.45em .6em;
+    border-top:1px solid var(--rule-2); display:flex; justify-content:space-between; gap:1em; flex-wrap:wrap;
+  }
+  .shot .cap .f{font-family:var(--mono)}
+  .verdict{background:var(--band); padding:1.05em 1.15em; margin:1.2em 0 0}
+  .verdict h4{margin-top:0}
+  pre{
+    font-family:var(--mono); font-size:7.6pt; line-height:1.5; background:#f5f4f1;
+    border:1px solid var(--rule); padding:.75em .85em; overflow-x:auto; margin:.6em 0 1em;
+    white-space:pre-wrap; word-break:break-word;
+  }
+  ol,ul{margin:.2em 0 .9em; padding-left:1.35em}
+  li{margin:0 0 .42em}
+  ol.numbered{list-style:none; padding-left:0; counter-reset:n}
+  ol.numbered>li{counter-increment:n; padding-left:1.9em; position:relative; margin-bottom:.7em}
+  ol.numbered>li::before{
+    content:counter(n) "."; position:absolute; left:0; top:0;
+    font-family:var(--sans); font-weight:700; color:var(--accent);
+  }
+  .note{font-size:9.4pt; color:var(--ink-2); border-left:2px solid var(--rule); padding-left:.85em; margin:1em 0}
+  .foot{border-top:1px solid var(--rule); margin-top:2.4em; padding-top:.8em; font-family:var(--sans); font-size:7.4pt; color:var(--ink-3); line-height:1.55}
+
+  /* ---------- print ---------- */
+  @page{size:A4; margin:14mm 13mm}
+  @media print{
+    body{background:#fff; font-size:9.3pt}
+    .sheet{max-width:none; margin:0; padding:0}
+    /* Sections flow rather than each claiming a fresh page — this brief is page-budgeted. */
+    .pb{break-before:auto}
+    section{margin-bottom:1.6em}
+    .card, .shot, .verdict, .finding, pre{break-inside:avoid}
+    table{break-inside:auto}
+    tr{break-inside:avoid}
+    h2,h3,h4{break-after:avoid}
+    .shot img{max-height:100mm; width:auto; max-width:100%; margin:0 auto}
+    /* In a strip the cell width sets the scale — all three must stay identical,
+       so no per-image height cap or auto-centering here. */
+    .shots img{max-height:none; width:100%; margin:0}
+    .shots{break-inside:avoid}
+  }
+  @media (max-width:760px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .stat{border-left:0; padding-left:0}
+    .cards{grid-template-columns:1fr}
+    .row{grid-template-columns:1fr; gap:.1em}
+    .shots.c3, .shots.c2{grid-template-columns:1fr}
+    .bar-row{grid-template-columns:1fr; gap:.2em}
+    .sheet{padding:8mm 5mm 14mm}
+  }
+  .scroll{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- ============================= COVER ============================= -->
+<header class="cover">
+  <div class="eyebrow">Databricks Genie Agent · Grounding Evaluation · Executive Analyst · Brief</div>
+  <h1>Three Ways to Ground<br>Genie Agent</h1>
+  <p class="lede">
+    We asked two executive questions, three times each, to three Genie Agent setups on the same
+    catalog: raw tables, then a semantic layer, then a semantic layer with an ontology and a
+    knowledge graph. Same product every time. We only changed what we gave it to work with.
+  </p>
+
+  <div class="stats">
+    <div class="stat"><span class="k">Questions</span><span class="v">2</span></div>
+    <div class="stat"><span class="k">Setups</span><span class="v">3</span></div>
+    <div class="stat"><span class="k">Checkpoints scored</span><span class="v v sm">15 per setup</span></div>
+    <div class="stat"><span class="k">Sessions captured</span><span class="v">6</span></div>
+    <div class="stat"><span class="k">Catalog under test</span><span class="v sm mono">gold_dev_analytics</span></div>
+  </div>
+
+  <!-- <div class="finding">
+    <h4>The finding</h4>
+    <p class="claim">Once we lock down what the agent can reach, two problems are left: it uses the wrong word, or it gives an incomplete answer. Certified measures fix the first. Nothing about them fixes the second.</p>
+    <p>
+      All three setups stayed inside the catalog. None invented a table, made up a supplier, or
+      claimed data was missing when it was there. That worst kind of failure cannot happen in a
+      bounded Genie Agent space. What is left is quieter and much harder to spot.
+    </p>
+    <p>
+      The bottom two setups scored <strong>27%</strong> and <strong>40%</strong> — one checkpoint
+      apart — and failed at different things. Both told us which warehouses and parts a supplier
+      outage would hit, and both left out a quarter of the sourcing graph. One of the three
+      locations about to run out of stock was in the part they missed. Neither warned us anything
+      was missing. Setup 3 scored <strong>87%</strong>: the only one that gave us the full exposure
+      list, the date the stock figures came from, and advice covering every at-risk location.
+    </p>
+    <p>
+      Setup 3 also lost one checkpoint outright to the semantic layer. Setup 2 put a price on the
+      exposure — <strong>₹53.89 Lakh</strong>, broken down by part and by warehouse. Setup 3
+      reported units and never turned them into money. We built the graph for navigation only, and
+      on this question that choice cost us.
+    </p>
+  </div> -->
+</header>
+
+<!-- ============================= ACCURACY ============================= -->
+<section>
+  <h4>Verified accuracy across both questions · 15 checkpoints each</h4>
+  <div class="bars">
+    <div class="bar-row">
+      <div class="lbl"><b>1</b> Agent, tables only</div>
+      <div class="track"><div class="fill a" style="width:27%"></div></div>
+      <div class="pct">27%</div><div class="of">4 of 15</div>
+    </div>
+    <div class="bar-row">
+      <div class="lbl"><b>2</b> Agent, semantic layer</div>
+      <div class="track"><div class="fill b" style="width:40%"></div></div>
+      <div class="pct">40%</div><div class="of">6 of 15</div>
+    </div>
+    <div class="bar-row">
+      <div class="lbl"><b>3</b> Agent + ontology + KG</div>
+      <div class="track"><div class="fill c" style="width:87%"></div></div>
+      <div class="pct">87%</div><div class="of">13 of 15</div>
+    </div>
+  </div>
+  <p class="note">
+    Each rung scores higher than the one below, but the steps are not the same size. The semantic
+    layer adds <strong>13 points</strong>, all of it from picking the right word on Question 1 and
+    pricing the answer on Question 2. It adds nothing to completeness. The ontology and graph add
+    <strong>47 points</strong>, almost all of it completeness. Two different problems, two
+    different layers. Neither does the other's job.
+  </p>
+</section>
+
+<!-- ============================= 01 ============================= -->
+<section class="pb">
+  <div class="sec-head"><span class="sec-num">01</span><h2>What actually changed between the three</h2></div>
+  <p>
+    All three are published Genie Agent spaces on <code>gold_dev_analytics</code>, and none can read
+    a table we did not hand it. Two things change across the rungs: whether we certified the
+    measures, and whether we declared the relationships.
+  </p>
+
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:17%"></th>
+        <th style="width:27%">1 · Tables only</th>
+        <th style="width:27%">2 · + Semantic layer</th>
+        <th style="width:29%">3 · + Ontology &amp; KG</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="k">Data sources</td>
+        <td>15 dims + 5 facts (20)</td>
+        <td>+ <strong>5 metric views</strong> (25)</td>
+        <td><strong>the same 25</strong></td>
+      </tr>
+      <tr>
+        <td class="k">Descriptions &amp; synonyms</td>
+        <td>None</td>
+        <td>None</td>
+        <td>Every table, every column; 3 synonyms per key column</td>
+      </tr>
+      <tr>
+        <td class="k">Text instructions</td>
+        <td>None</td>
+        <td>1 block — routing, clarification, empty-period, formatting</td>
+        <td>The same block <strong>+ generated ontology grounding</strong></td>
+      </tr>
+      <tr>
+        <td class="k">Certified snippets</td>
+        <td>None</td>
+        <td>None</td>
+        <td>8 measures + 4 filters</td>
+      </tr>
+      <tr>
+        <td class="k">SQL functions</td>
+        <td>None</td>
+        <td>None</td>
+        <td><code>kg_find_node</code>, <code>kg_neighbors</code></td>
+      </tr>
+      <tr>
+        <td class="k">Sourcing relation reachable</td>
+        <td><span class="m bad">✗</span> <code>dim_supplier_contract</code> not exposed</td>
+        <td><span class="m bad">✗</span> <code>dim_supplier_contract</code> not exposed</td>
+        <td><span class="m ok">✓</span> as typed edges in <code>kg_edges</code></td>
+      </tr>
+      <tr>
+        <td class="k">Typical failure</td>
+        <td>Answers one reading of the question, then says no other reading existed</td>
+        <td>Correct maths over an incomplete list, every time</td>
+        <td>Answers narrowly, but says what it measured</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>
+    <strong>The semantic layer bought us nothing on the relationship question.</strong> Five
+    certified metric views are the only difference between Setup 1 and Setup 2. Setup 2 still came
+    back with the same incomplete part list, using about twice as many queries to get there. A
+    semantic layer certifies how we calculate a number along a path that already exists. It cannot
+    build a new path, and it cannot tell us we took the wrong one.
+  </p>
+  <p>
+    <strong>What Setup 3 adds is the ontology, and the ontology is what reaches the
+    relationship.</strong> Neither space exposes
+    <code>supply_chain_analytics.dim_supplier_contract</code>, the table that actually records who
+    supplies what — it is not one of the 15 dimensions, and no query either space writes can touch
+    it. Setup 3 has instead a declared relationship,
+    <code>mfg:supplierSuppliesPart</code>, materialised into <code>kg_edges</code> and read through
+    two functions. Those edges were built from <code>dim_supplier_contract</code> at materialisation
+    time, so Setup 3 does reach a fact Setup 2 cannot — but only because we said in advance that the
+    relationship exists and was worth carrying. That is the whole difference: not a bigger catalog,
+    a declared one.
+  </p>
+</section>
+
+<!-- ============================= 02 · Q1 ============================= -->
+<section class="pb">
+  <div class="sec-head"><span class="sec-num">02</span><h2>Question 1 — an ambiguous word</h2></div>
+
+  <div class="q">
+    <div class="tag">Q1</div>
+    <div class="txt">“What did we spend last month?”</div>
+  </div>
+
+  <p>
+    The maths is easy, and that is the point. Our data holds at least three unrelated things a
+    C-level user might call “spend”: campaign media spend, cost of poor quality, and discount given
+    away. The ontology declares four meanings —
+    <code>ea:Cost disambiguatesTo ea:CampaignSpend, ea:CostPerLead, ea:COPQ, ea:Discount</code> —
+    and the numbers are nowhere near each other in size. The agent can calculate any of them
+    perfectly and still hand us the wrong answer. “Last month” hides a second trap: our domains do
+    not end on the same date, so the agent has to work it out per domain rather than read it off a
+    calendar.
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="cfg"><b>1</b> · Tables only</div>
+      <div class="sub">15 dims + 5 facts</div>
+      <div class="score">1<span style="font-size:13pt; color:var(--ink-3)">/6</span></div>
+      <div class="verd bad">Answered one of three</div>
+    </div>
+    <div class="card">
+      <div class="cfg"><b>2</b> · Semantic layer</div>
+      <div class="sub">+ 5 metric views, instructions</div>
+      <div class="score">3<span style="font-size:13pt; color:var(--ink-3)">/6</span></div>
+      <div class="verd part">Asked, but silently</div>
+    </div>
+    <div class="card win">
+      <div class="cfg"><b>3</b> · Ontology + KG</div>
+      <div class="sub">+ TTL grounding, snippets, UDFs</div>
+      <div class="score">5<span style="font-size:13pt; color:var(--ink-3)">/6</span></div>
+      <div class="verd ok">Asked, and showed its working</div>
+    </div>
+  </div>
+
+  <div class="shots">
+    <div class="shot">
+      <div class="shot-hd"><b>1</b> · Tables only</div>
+      <img src="images/cost-genie-tables-only.png" alt="Genie Agent with tables only answering the spend question with a single marketing figure of 4.4 crore">
+      <div class="cap"><span class="f">cost-genie-tables-only.png</span><span>Answered on one sense · thinking collapsed · Sources (2)</span></div>
+    </div>
+    <div class="shot">
+      <div class="shot-hd"><b>2</b> · Semantic layer</div>
+      <img src="images/cost-genie-semantic-layer.png" alt="Genie Agent with semantic layer, thinking expanded, asking which of three spend metrics was meant">
+      <div class="cap"><span class="f">cost-genie-semantic-layer.png</span><span>Asked · trace restates the reply · no sources</span></div>
+    </div>
+    <div class="shot">
+      <div class="shot-hd"><b>3</b> · Ontology + KG</div>
+      <img src="images/cost-genie-ontology.png" alt="Genie Agent with ontology showing a Definitions used reasoning block before asking which spend was meant">
+      <div class="cap"><span class="f">cost-genie-ontology.png</span><span>Asked · “Definitions used” block · period rule stated</span></div>
+    </div>
+  </div>
+
+  <div class="legend">Six checkpoints · ✓ correct · ◐ partial, uncounted · ✗ wrong or absent</div>
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:19%">Checkpoint</th>
+        <th style="width:21%">Governed by</th>
+        <th style="width:20%">1 · Tables</th>
+        <th style="width:20%">2 · Semantic</th>
+        <th style="width:20%">3 · + Ontology</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="k">“Spend” treated as ambiguous</td>
+        <td class="truth">ea:Cost disambiguatesTo — 4 senses</td>
+        <td><span class="m bad">✗</span> answered on one sense</td>
+        <td><span class="m ok">✓</span> asked</td>
+        <td><span class="m ok">✓</span> asked</td>
+      </tr>
+      <tr>
+        <td class="k">Senses enumerated</td>
+        <td class="truth">CampaignSpend · CostPerLead · COPQ · Discount</td>
+        <td><span class="m bad">✗</span> none offered</td>
+        <td><span class="m part">◐</span> 3 of 4 — no cost per lead</td>
+        <td><span class="m part">◐</span> 3 of 4 — no cost per lead</td>
+      </tr>
+      <tr>
+        <td class="k">No false claim of absence</td>
+        <td class="truth">COPQ on fact_supplier_quality; discount on fact_sales_order</td>
+        <td><span class="m bad">✗</span> “the only ‘spend’ metric available in the data”</td>
+        <td><span class="m ok">✓</span></td>
+        <td><span class="m ok">✓</span></td>
+      </tr>
+      <tr>
+        <td class="k">Period resolved and stated</td>
+        <td class="truth">per-domain max date; “last month” ≠ calendar assumption</td>
+        <td><span class="m ok">✓</span> August 2026, justified as the latest month with records</td>
+        <td><span class="m bad">✗</span> period never addressed</td>
+        <td><span class="m ok">✓</span> committed to the most recent <em>complete</em> month per domain</td>
+      </tr>
+      <tr>
+        <td class="k">Any figure published is at the right grain</td>
+        <td class="truth">Ertiga Family Festival spans Aug 1 – Oct 31</td>
+        <td><span class="m bad">✗</span> full ₹1.2 Cr booked to August</td>
+        <td><span class="m ok">✓</span> published no figure, and said why</td>
+        <td><span class="m ok">✓</span> published no figure, and said why</td>
+      </tr>
+      <tr>
+        <td class="k">Decision provenance visible</td>
+        <td class="truth">reader must be able to audit the vocabulary used</td>
+        <td><span class="m bad">✗</span> thinking collapsed, no definitions</td>
+        <td><span class="m bad">✗</span> thinking expanded — and it only restates the reply</td>
+        <td><span class="m ok">✓</span> “Definitions used” block, named and expanded</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="verdict">
+    <h4>Verdict · Question 1</h4>
+    <p>
+      The real gap is between Setup 1 and the other two, and <strong>one instruction block buys it —
+      not the ontology</strong>. Setup 1 calculated nothing badly. It calculated the wrong thing with
+      full confidence, then took away our reason to check by saying nothing else existed. One page of
+      clarification text prevents that, and it is worth knowing before you buy an ontology.
+    </p>
+    <p>
+      Setups 2 and 3 make the same call, so the difference is whether we can audit it. We expanded
+      Setup 2's thinking to find out: it is one bullet repeating its own answer. Setup 3's trace
+      names the ambiguity, names the three candidate measures, and commits up front to a period rule.
+      Both refuse to guess; only one shows us why. On a single question that hardly matters. Across a
+      standing Benchmark set, it is the difference between a regression we can diagnose and one we
+      can only watch.
+    </p>
+    <p>
+      Neither offered <strong>cost per lead</strong>, and the obvious explanation is wrong — our
+      compile path carries all four meanings into the space instructions. Offering three is a fair
+      reading of the word “spend”, since cost per lead is a ratio, not an amount spent.
+    </p>
+  </div>
+</section>
+
+<!-- ============================= 03 · Q2 ============================= -->
+<section class="pb">
+  <div class="sec-head"><span class="sec-num">03</span><h2>Question 2 — a supplier blast radius</h2></div>
+
+  <div class="q">
+    <div class="tag">Q2</div>
+    <div class="txt">“If Supplier 001 goes down tomorrow, which warehouses and parts are exposed?”</div>
+  </div>
+
+  <p>
+    This question asks the agent to follow a relationship, and there is no join it can use to do it.
+    We gave <code>dim_supplier_contract</code> — one row per contracted (supplier, part) pair — to
+    <strong>none</strong> of the three spaces. For Setups 1 and 2, the only column sourcing and
+    inventory share is <code>PART_KEY</code>, sitting on two facts that count different things. So
+    the obvious move is to link supplier to part through <code>fact_supplier_quality</code> — an
+    <em>inspection</em> log. That is not a broken join. It is a narrower relationship wearing the
+    right name: “supplies this part <strong>and we have inspected it</strong>”.
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <div class="cfg"><b>1</b> · Tables only</div>
+      <div class="sub">1 correction round · 8 query steps</div>
+      <div class="score">3<span style="font-size:13pt; color:var(--ink-3)">/9</span></div>
+      <div class="verd bad">Incomplete, unpriced</div>
+    </div>
+    <div class="card">
+      <div class="cfg"><b>2</b> · Semantic layer</div>
+      <div class="sub">6 correction rounds · ~17 query steps</div>
+      <div class="score">3<span style="font-size:13pt; color:var(--ink-3)">/9</span></div>
+      <div class="verd bad">Incomplete, priced exactly</div>
+    </div>
+    <div class="card win">
+      <div class="cfg"><b>3</b> · Ontology + KG</div>
+      <div class="sub">0 corrections · ~11 query steps</div>
+      <div class="score">8<span style="font-size:13pt; color:var(--ink-3)">/9</span></div>
+      <div class="verd ok">Complete, dated, unpriced</div>
+    </div>
+  </div>
+
+  <div class="rows">
+    <div class="row"><div class="rk">Setup 1 said</div><div class="rv">
+      “<strong>6 warehouses and 3 parts</strong> exposed, with 2 locations facing immediate stockout
+      risk.” Everything about the three parts it found holds up. No money anywhere, no snapshot date.
+    </div></div>
+    <div class="row"><div class="rk">Setup 2 said</div><div class="rv">
+      “<strong>3 Parts Across 6 Warehouses Exposed</strong> … total inventory value
+      <strong>₹53.89 Lakh</strong>” — per part, per warehouse and in total, reconciling to the rupee.
+      Same three parts as Setup 1, after six repair rounds instead of one. It also queried part
+      criticality twice and never reported it.
+    </div></div>
+    <div class="row"><div class="rk">Setup 3 said</div><div class="rv">
+      “<strong>4 Parts Across 7 Warehouses</strong> … 3 locations at critical or high stockout risk
+      <strong>as of September 4, 2026</strong>.” The extra part is <strong>Oil Seal</strong> at
+      Manesar Plant Store — HIGH risk, 1,521 units against 1,819 safety stock, 13 days of cover. It
+      also turned up <strong>Chennai RDC</strong>, the seventh exposed warehouse, and classified
+      every part B/C with subsystem. No rupee figure anywhere.
+    </div></div>
+  </div>
+
+  <div class="shots">
+    <div class="shot">
+      <div class="shot-hd"><b>1</b> · Tables only — 3 parts, 6 warehouses</div>
+      <img src="images/supplier-genie-tables-only.png" alt="Genie Agent with tables only reporting 6 warehouses and 3 parts exposed to a Supplier 001 outage">
+      <div class="cap"><span class="f">supplier-genie-tables-only.png</span><span>8 steps · 1 correction · Sources (5)</span></div>
+    </div>
+    <div class="shot">
+      <div class="shot-hd"><b>2</b> · Semantic layer — 3 parts, ₹53.89 L</div>
+      <img src="images/supplier-genie-semantic-layer.png" alt="Genie Agent with semantic layer reporting 3 parts across 6 warehouses worth 53.89 Lakh after six rounds of query corrections">
+      <div class="cap"><span class="f">supplier-genie-semantic-layer.png</span><span>~17 steps · 6 corrections · Sources (5)</span></div>
+    </div>
+    <div class="shot">
+      <div class="shot-hd"><b>3</b> · Ontology + KG — 4 parts, 7 warehouses</div>
+      <img src="images/supplier-genie-ontology.png" alt="Genie Agent with ontology and knowledge graph reporting 4 parts across 7 warehouses with three at-risk locations as of September 4 2026">
+      <div class="cap"><span class="f">supplier-genie-ontology.png</span><span>~11 steps · 0 corrections · Sources (5)</span></div>
+    </div>
+  </div>
+
+  <p class="note">
+    Setup 2 is our strongest argument for the ontology layer, and it makes that argument by being
+    <em>good</em>. It is not sloppy. It is governed, its measures are certified, its maths adds up,
+    and it repeats. It is also missing a quarter of the answer, and every one of those strengths
+    makes the gap harder to see.
+  </p>
+
+  <div class="legend">Nine checkpoints · ✓ correct · ◐ partial, uncounted · ✗ wrong or absent</div>
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:19%">Checkpoint</th>
+        <th style="width:20%">Governed by</th>
+        <th style="width:20%">1 · Tables</th>
+        <th style="width:20%">2 · Semantic</th>
+        <th style="width:21%">3 · + Ontology</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="k">Supplier entity resolved</td>
+        <td class="truth">Supplier 001 · Tier-1 · Gurgaon</td>
+        <td><span class="m ok">✓</span> resolved</td>
+        <td><span class="m ok">✓</span> after a name probe and two failed queries</td>
+        <td><span class="m ok">✓</span> one <code>kg_find_node</code></td>
+      </tr>
+      <tr>
+        <td class="k">Part set complete</td>
+        <td class="truth">4 — Oxygen Sensor, Tie Rod End, Oil Seal, Exhaust Gasket <em>(contract-derived)</em></td>
+        <td><span class="m bad">✗</span> 3 — Oil Seal absent</td>
+        <td><span class="m bad">✗</span> 3 — Oil Seal absent</td>
+        <td><span class="m ok">✓</span> 4</td>
+      </tr>
+      <tr>
+        <td class="k">Warehouse set complete</td>
+        <td class="truth">7, including Chennai RDC</td>
+        <td><span class="m bad">✗</span> 6</td>
+        <td><span class="m bad">✗</span> 6</td>
+        <td><span class="m ok">✓</span> 7</td>
+      </tr>
+      <tr>
+        <td class="k">Every immediate-risk location found</td>
+        <td class="truth">3 — Ahmedabad CRITICAL, Gurgaon HIGH, Manesar HIGH</td>
+        <td><span class="m bad">✗</span> 2 of 3, reported as the total</td>
+        <td><span class="m bad">✗</span> 2 of 3, reported as the total</td>
+        <td><span class="m ok">✓</span> 3</td>
+      </tr>
+      <tr>
+        <td class="k">Risk bands over the closed enum</td>
+        <td class="truth">mfg:RiskLevel = LOW / MEDIUM / HIGH / CRITICAL</td>
+        <td><span class="m ok">✓</span> all four bands</td>
+        <td><span class="m ok">✓</span> all four bands</td>
+        <td><span class="m ok">✓</span> all four bands</td>
+      </tr>
+      <tr>
+        <td class="k">Snapshot date stated</td>
+        <td class="truth">point-in-time grain; <code>is_current_snapshot</code></td>
+        <td><span class="m bad">✗</span> undated</td>
+        <td><span class="m bad">✗</span> undated</td>
+        <td><span class="m ok">✓</span> “as of September 4, 2026”</td>
+      </tr>
+      <tr>
+        <td class="k">Monetary exposure quantified</td>
+        <td class="truth">MEASURE(total_stock_valuation) on the current snapshot</td>
+        <td><span class="m bad">✗</span> days of supply and units only</td>
+        <td><span class="m ok">✓</span> ₹53.89 L, reconciling per part and per warehouse</td>
+        <td><span class="m bad">✗</span> units only, no currency anywhere</td>
+      </tr>
+      <tr>
+        <td class="k">Part criticality classified</td>
+        <td class="truth">B / B / C / C, with subsystem</td>
+        <td><span class="m ok">✓</span> Class B, B, C</td>
+        <td><span class="m bad">✗</span> queried twice, never reported</td>
+        <td><span class="m ok">✓</span> B/C plus Powertrain / Chassis</td>
+      </tr>
+      <tr>
+        <td class="k">Reached the answer without rewriting failed queries</td>
+        <td class="truth">determinism and cost</td>
+        <td><span class="m part">◐</span> 1 correction round, 8 steps</td>
+        <td><span class="m bad">✗</span> 6 correction rounds, ~17 steps</td>
+        <td><span class="m ok">✓</span> none, ~11 steps</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="verdict">
+    <h4>Verdict · Question 2</h4>
+    <p>
+      The two lower setups tie at 3 of 9, and how they got there matters more than the tie. Setup 1
+      classified the parts and never priced them. Setup 2 priced them to the rupee and never
+      classified them. Neither found the fourth part, the seventh warehouse, or the third at-risk
+      location, and neither told us what date it was looking at. Both presented their totals as
+      totals.
+    </p>
+    <p>
+      This is not the model being smarter, and the matching sources prove it. Setups 2 and 3 got the
+      same 25 tables, and neither holds <code>dim_supplier_contract</code>, so <strong>no prompt will
+      ever get Setup 2 to the fourth part</strong>. That ceiling is built in. The fix is a
+      deployment, not a prompt.
+    </p>
+    <p>
+      Setup 3's single loss is the fair counterweight, and it flips the ranking on the one thing an
+      executive is most likely to ask next. It gave us the complete picture and no money. Setup 2
+      gave us exact money over an incomplete picture. Of those two faults, the missing rupee column
+      is the one we can actually see.
+    </p>
+  </div>
+</section>
+
+<!-- ============================= 04 ============================= -->
+<section class="pb">
+  <div class="sec-head"><span class="sec-num">04</span><h2>Why the graph found the fourth part</h2></div>
+  <p class="lede">
+    This is the whole report in one comparison, and it has nothing to do with how good the model is.
+  </p>
+  <p>
+    Two tables can tell you who supplies a part. The <strong>contract register</strong> lists every
+    part a supplier has agreed to supply. That is the real answer, and it holds 60 rows. The
+    <strong>inspection log</strong> lists every part somebody has checked the quality of. It looks
+    like the same thing and holds 45 rows. Neither table's name warns you about the difference.
+  </p>
+  <p>
+    The lower two setups never had the contract register, so the inspection log was their only route.
+    They took it and lost a quarter of the answer — <strong>3 of 4 parts, 75%</strong>, which is
+    exactly the ratio the inspection route yields across the whole catalog. We build the graph from
+    the contract register on purpose, because we already hit this same bug once, when we built the
+    graph the wrong way round:
+  </p>
+
+  <pre>-- src/ontology/edge_sources.sql   (hand-written, runs before materialize_kg)
+--
+-- Contract-derived, not event-derived. The previous source for supplierSuppliesPart
+-- was fact_supplier_quality — an inspection-grain fact — which silently narrowed the
+-- relation to "supplies this part AND we have inspected it": 45 of 60 contracted
+-- parts. Parts never inspected (e.g. Blower Motor P0071, Headrest Guide P0088) had a
+-- preferred supplier on contract but no edge in the graph, so traversals reported
+-- them as unsourced.
+CREATE OR REPLACE VIEW ontology.part_supplier_sourcing AS
+  SELECT s.SUPPLIER_KEY, p.PART_KEY, c.is_preferred
+  FROM        supply_chain_analytics.dim_supplier_contract c
+  JOIN        dim.dim_supplier s ON s.SUPPLIER_ID = c.supplier_id
+  JOIN        dim.dim_part     p ON p.PART_ID     = c.part_id;
+
+-- Guard: every contract row must resolve to both surrogate keys, or fail the run.
+-- assert_kg_integrity's empty_rel check only fires at zero edges, so it would not
+-- notice this relation quietly shrinking again — exactly how the original defect survived.</pre>
+
+  <p class="note">
+    That guard exists because this same relationship already shrank once and nobody noticed. Setups 1
+    and 2 reproduce that exact bug live in this study. The check is the difference between a bug we
+    fix once and a bug that returns on the next dimension reload.
+  </p>
+
+  <p>
+    So the ontology does not make the agent cleverer. It means somebody wrote down, once, which of
+    two similar-looking tables is the real one — and now the agent cannot pick the other. On
+    Question 2 that was two function calls: <code>kg_find_node('Supplier 001')</code>, then
+    <code>kg_neighbors('Supplier', key, 'supplierSuppliesPart')</code>. Following the graph replaced
+    all the hunting.
+  </p>
+
+  <h3>Three layers, three kinds of knowledge</h3>
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:16%">Layer</th>
+        <th style="width:20%">In one line</th>
+        <th style="width:32%">The question it answers for the agent</th>
+        <th style="width:32%">What goes wrong without it</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="k">Semantic layer</td>
+        <td>A dictionary of <strong>numbers</strong></td>
+        <td>“When someone says <em>inventory value</em>, which column do I add up, and what am I not
+        allowed to add it across?”</td>
+        <td>Every answer works out the maths from scratch. Ask twice, get two different numbers, and
+        nothing tells you a choice was made.</td>
+      </tr>
+      <tr>
+        <td class="k">Ontology</td>
+        <td>A dictionary of <strong>words</strong></td>
+        <td>“Does <em>depot</em> mean warehouse? Does <em>spend</em> have more than one meaning? Is
+        <em>at risk</em> three bands or four?”</td>
+        <td>The agent picks one meaning of your word and answers that perfectly. You never find out
+        it chose.</td>
+      </tr>
+      <tr>
+        <td class="k">Knowledge graph</td>
+        <td>A map of <strong>connections</strong></td>
+        <td>“Which supplier feeds this part? Which warehouses hold it? Can I walk from one to the
+        other without guessing a join?”</td>
+        <td>The agent joins whichever two tables share a column. The answer is right about the rows
+        it found, and missing the ones it never found.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>
+    We maintain one of the three by hand. <code>exec_analyst.ttl</code> is 743 lines; from it
+    <code>generate.py</code> writes the graph DDL, the two lookup functions, seven data assertions,
+    the glossary tags, the disambiguation context and the space config — eight artifacts, each with a
+    <em>do not edit by hand</em> header, and the build fails if any is older than the TTL.
+  </p>
+</section>
+
+<!-- ============================= 05 ============================= -->
+<section class="pb">
+  <div class="sec-head"><span class="sec-num">05</span><h2>Side by side</h2></div>
+  <p style="font-family:var(--sans); font-size:8pt; color:var(--ink-3); margin-bottom:1em">
+    Q1 · “What did we spend last month?” (6 checkpoints) &nbsp;·&nbsp;
+    Q2 · “If Supplier 001 goes down tomorrow…” (9 checkpoints)
+  </p>
+
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:19%">Dimension</th>
+        <th style="width:26%">1 · Tables only</th>
+        <th style="width:27%">2 · Semantic layer</th>
+        <th style="width:28%">3 · Ontology + KG</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td colspan="4" style="border-bottom:1.5px solid var(--ink); padding-top:1em"><span class="eyebrow">Accuracy</span></td></tr>
+      <tr><td class="k">Q1 · ambiguous cost</td><td>1/6</td><td>3/6</td><td>5/6</td></tr>
+      <tr><td class="k">Q2 · supplier outage reach</td><td>3/9</td><td>3/9</td><td>8/9</td></tr>
+      <tr><td class="k">Total</td><td><strong>4/15 · 27%</strong></td><td><strong>6/15 · 40%</strong></td><td><strong>13/15 · 87%</strong></td></tr>
+      <tr><td class="k">Failures a reader could spot alone</td><td>2 of 10 — the rest are things left out</td><td>1 of 8 — the short list leaves no trace</td><td>1 of 1 — the missing money column is obvious on the page</td></tr>
+
+      <tr><td colspan="4" style="border-bottom:1.5px solid var(--ink); padding-top:1em"><span class="eyebrow">Cost &amp; behaviour</span></td></tr>
+      <tr><td class="k">Query steps · Q2</td><td>8</td><td>~17</td><td>~11</td></tr>
+      <tr><td class="k">Visible correction rounds · Q2</td><td>1</td><td>6 — name format, JOIN vs WHERE, <code>IS_CURRENT</code>, two rebuilds</td><td>0</td></tr>
+      <tr><td class="k">Same answer next time?</td><td>Unlikely — it re-invents both the measure and the link</td><td>Partly — measures are fixed, the link is still a guess</td><td>Yes — measures and links are both declared</td></tr>
+
+      <tr><td colspan="4" style="border-bottom:1.5px solid var(--ink); padding-top:1em"><span class="eyebrow">Fitness for executive use</span></td></tr>
+      <tr><td class="k">Snapshot discipline</td><td>Undated</td><td>Undated</td><td>Dated — “as of September 4, 2026”</td></tr>
+      <tr><td class="k">Answers in currency</td><td>No</td><td><strong>Yes</strong> — the only one</td><td>No</td></tr>
+      <tr><td class="k">Answers completely</td><td>No</td><td>No</td><td><strong>Yes</strong> — the only one</td></tr>
+      <tr><td class="k">How it fails</td><td>Closes the question by saying the data isn't there</td><td>Gives an exact total over a short list</td><td>Says what it covered, and on what date</td></tr>
+      <tr><td class="k">Best use</td><td>Poking around, by someone who knows the schema</td><td>Governed metric reporting where the join already exists</td><td>Executive questions about how the business connects</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="verdict">
+    <h4>The short version</h4>
+    <p>
+      The semantic layer stops the agent calculating the number wrong. The ontology stops it
+      answering the wrong question. The graph stops it answering only part of one. Here the first was
+      worth 13 points and the other two together were worth 47 — and only the third caught a
+      high-risk part that was about to run out.
+    </p>
+  </div>
+</section>
+
+<!-- ============================= 06 ============================= -->
+<section class="pb">
+  <div class="sec-head"><span class="sec-num">06</span><h2>Recommendation</h2></div>
+
+  <div class="finding" style="margin-top:0">
+    <h4>Build on Setup 3</h4>
+    <p class="claim">Genie Agent with the semantic layer, the ontology and the knowledge graph — and close its one gap, which is a two-line instruction change.</p>
+    <p>
+      Setup 3 did not win everything. Setup 2 was the only session that priced the exposure, and when
+      a supplier goes down, money is not optional. Setup 3 is the only one whose remaining fault you
+      can <em>see</em>. A missing rupee column makes you ask a follow-up question. A missing part does
+      not.
+    </p>
+  </div>
+
+  <p style="margin-top:1.3em">Three things earn it the recommendation:</p>
+  <ol class="numbered">
+    <li>
+      <strong>Only the graph answered in full.</strong> Both lower setups gave three of four
+      contracted parts, six of seven exposed warehouses and two of three locations at immediate risk
+      — and presented each as a complete count. That ceiling is built into the setup, not the
+      behaviour: neither space can see <code>dim_supplier_contract</code>, so no prompt will raise it.
+    </li>
+    <li>
+      <strong>Declared relationships stop the thrashing.</strong> Setup 2 spent six repair rounds and
+      about seventeen steps poking at tables that were never a sourcing register, and still came back
+      short. Setup 3 followed one edge, took eleven steps, and fixed nothing. That saves warehouse
+      time as well as improving accuracy.
+    </li>
+    <li>
+      <strong>Only the ontology gave us an answer we can audit.</strong> Named definitions on
+      Question 1, a stated snapshot date and classified parts on Question 2. We cannot
+      regression-test an answer that will not say what it measured, or when.
+    </li>
+  </ol>
+
+  <h4>Do this next</h4>
+  <ol class="numbered">
+    <li>
+      <strong>Spell out “follow the graph, then measure” in the space instructions.</strong> The one
+      checkpoint Setup 3 lost is a routing gap, not a data gap. Once it has the entity set from
+      <code>kg_edges</code>, it should price them with <code>MEASURE(total_stock_valuation)</code> on
+      <code>metrics_inventory_snapshot</code> before answering. Do <em>not</em> put money into
+      <code>kg_edges</code> — keeping it navigation-only is what keeps those two tables small and
+      correct.
+    </li>
+    <li>
+      <strong>Put both questions in Benchmark, with their counts as assertions.</strong> “4 parts,
+      7 warehouses, 3 at-risk locations, snapshot 2026-09-04” is exactly the kind of claim that breaks
+      without anyone seeing it. A standing set of questions turns this evaluation into a test.
+    </li>
+    <li>
+      <strong>Decide whether cost per lead belongs in the clarification</strong> — accept three
+      options for “spend” and assert that, or split the instruction so “cost” offers all four. Pick
+      one and write it down. Leaving it open is what will make the next run look like a regression.
+    </li>
+    <li>
+      <strong>Add a supplier → warehouse relationship, or approve the two-hop.</strong> The agent
+      works out the reach of an outage by following <code>supplierSuppliesPart</code> then
+      <code>partStockedAt</code>, every single time. It is the question we get asked most, and it
+      deserves to be one documented path.
+    </li>
+    <li>
+      <strong>Do not put the tables-only space in front of an executive.</strong> It is a decent
+      exploration tool for someone who knows the schema and will check the output. Here it closed one
+      question by claiming the data was not there, and reported a partial answer as a total — with no
+      reason for the reader to doubt either.
+    </li>
+  </ol>
+
+  <p class="note">
+    One caveat on the scores. Our structural claims rest on the definitions in the repo and on
+    Setup 3's answer containing everything the other two returned plus more. We have not
+    independently re-run SQL to certify the raw counts in this pass. The full report carries five
+    queries that settle them in one run; the decisive one is whether the inspection route returns 3
+    parts where the contract register returns 4.
+  </p>
+</section>
+
+<div class="foot">
+  <p style="margin-bottom:.4em">
+    <strong>Brief · evaluation of six captured Genie Agent sessions</strong> ·
+    two questions × three grounding setups on <span class="mono">gold_dev_analytics</span>,
+    agent <span class="mono">[dev joyal_cs] Executive Analyst</span>, Serverless Starter Warehouse,
+    inventory snapshot 2026-09-04.
+  </p>
+  <p style="margin:0">
+    Condensed from <span class="mono">docs/genie-agent-grounding.html</span>, which carries all six
+    session transcripts, the full build walkthrough for the three layers, the ranked failure modes
+    and the verification queries. Structural claims are grounded in
+    <span class="mono">src/ontology/edge_sources.sql</span>,
+    <span class="mono">src/ontology/exec_analyst.ttl</span> and
+    <span class="mono">src/metric_views/</span>.
+  </p>
+</div>
+
+</div>
+</body>
+</html>
