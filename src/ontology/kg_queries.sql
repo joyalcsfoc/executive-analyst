@@ -18,9 +18,6 @@ SELECT * FROM {catalog}.ontology.kg_edges WHERE rel = 'campaignRunsOnChannel' LI
 -- MarketingCampaign --[campaignTargetsSegment]--> CustomerSegment: sample of 10
 SELECT * FROM {catalog}.ontology.kg_edges WHERE rel = 'campaignTargetsSegment' LIMIT 10;
 
--- Dealer --[dealerSellsModel]--> VehicleModel: sample of 10
-SELECT * FROM {catalog}.ontology.kg_edges WHERE rel = 'dealerSellsModel' LIMIT 10;
-
 -- ProductionLine --[lineProducesModel]--> VehicleModel: sample of 10
 SELECT * FROM {catalog}.ontology.kg_edges WHERE rel = 'lineProducesModel' LIMIT 10;
 

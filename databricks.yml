@@ -9,8 +9,8 @@ variables:
   warehouse_id:
     description: SQL warehouse ID that the Genie space and metric-view job use. Must have SELECT on gold facts and CREATE VIEW on domain schemas.
   gold_catalog:
-    description: Unity Catalog where fact tables live and metric views are created (gold_dev for sandbox, gold for production).
-    default: gold_dev
+    description: Unity Catalog where fact tables live and metric views are created (gold_dev_analytics for sandbox, gold for production).
+    default: gold_dev_analytics
   genie_space_permission_level:
     description: Permission level granted to genie_space_permission_group (CAN_VIEW, CAN_RUN, CAN_EDIT, CAN_MANAGE).
     default: CAN_RUN
@@ -29,7 +29,7 @@ targets:
       host: https://dbc-371e9acf-b9ec.cloud.databricks.com
     variables:
       warehouse_id: d2533a75c1bd9265
-      gold_catalog: gold_dev
+      gold_catalog: gold_dev_analytics
 
   prod:
     mode: production

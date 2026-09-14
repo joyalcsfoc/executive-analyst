@@ -79,6 +79,8 @@ UNION ALL
 
 EXECUTE IMMEDIATE
 "CREATE OR REPLACE TABLE " || {{catalog}} || ".ontology.kg_edges AS
+SELECT e.rel, e.subject_type, e.subject_key, e.object_type, e.object_key
+FROM (
   SELECT DISTINCT
     'campaignRunsOnChannel' AS rel,
     'MarketingCampaign' AS subject_type,
@@ -94,14 +96,6 @@ UNION ALL
     'CustomerSegment' AS object_type,
     CAST(SEGMENT_KEY AS STRING) AS object_key
   FROM " || {{catalog}} || ".marketing_analytics.fact_campaign_performance" || "
-UNION ALL
-  SELECT DISTINCT
-    'dealerSellsModel' AS rel,
-    'Dealer' AS subject_type,
-    CAST(DEALER_KEY AS STRING) AS subject_key,
-    'VehicleModel' AS object_type,
-    CAST(MODEL_KEY AS STRING) AS object_key
-  FROM " || {{catalog}} || ".revenue_analytics.fact_sales_order" || "
 UNION ALL
   SELECT DISTINCT
     'lineProducesModel' AS rel,
@@ -141,4 +135,9 @@ UNION ALL
     CAST(SUPPLIER_KEY AS STRING) AS subject_key,
     'Part' AS object_type,
     CAST(PART_KEY AS STRING) AS object_key
-  FROM " || {{catalog}} || ".supply_chain_analytics.fact_supplier_quality" || "";
+  FROM " || {{catalog}} || ".ontology.part_supplier_sourcing" || "
+) e
+JOIN " || {{catalog}} || ".ontology.kg_nodes ns
+  ON ns.node_type = e.subject_type AND ns.node_key = e.subject_key
+JOIN " || {{catalog}} || ".ontology.kg_nodes nob
+  ON nob.node_type = e.object_type AND nob.node_key = e.object_key";

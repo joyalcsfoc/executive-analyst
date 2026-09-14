@@ -44,6 +44,25 @@ fields:
     display_name: Part Name
     comment: Inspected part from dim_part.
     synonyms: [part, part name, component]
+  - name: part_criticality
+    expr: UPPER(LEFT(TRIM(dim_part.CRITICALITY_CLASS), 1))
+    display_name: Part Criticality
+    comment: >
+      Engineering criticality from dim_part.CRITICALITY_CLASS, normalised to A / B / C.
+      A = critical, B = major, C = minor. Normalised on purpose - the raw column stores
+      A-CRITICAL and A - CRITICAL as two spellings of the same class, so filtering the raw
+      value silently drops parts.
+    synonyms: [criticality, criticality class, part criticality, part class, critical part, class B, class C]
+  - name: abc_class
+    expr: dim_part.ABC_CLASS
+    display_name: ABC Class
+    comment: ABC inventory classification (A / B / C) from dim_part. A separate concept from part_criticality - never substitute one for the other.
+    synonyms: [ABC class, ABC classification, ABC code, ABC segment]
+  - name: part_category
+    expr: dim_part.CATEGORY
+    display_name: Part Category
+    comment: Functional subsystem the part belongs to - POWERTRAIN, CHASSIS, ELECTRICAL, INTERIOR.
+    synonyms: [category, subsystem, part category, functional category, system]
   - name: inspection_date
     expr: dim_date.FULL_DATE
     display_name: Inspection Date

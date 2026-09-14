@@ -194,18 +194,20 @@ ea:hasFullDate a owl:DatatypeProperty ;
 ##############################################################################
 
 mfg:RiskLevel a owl:Class ;
-    rdfs:comment "A three-level qualitative risk rating. In the gold slice it carries STOCKOUT_RISK: HIGH means QUANTITY_ON_HAND is below SAFETY_STOCK_QTY, MEDIUM means approaching it, LOW means adequate cover." ;
+    rdfs:comment "A four-level qualitative risk rating. In the gold slice it carries STOCKOUT_RISK: CRITICAL is the most severe band, HIGH means QUANTITY_ON_HAND is below SAFETY_STOCK_QTY, MEDIUM means approaching it, LOW means adequate cover. 'At risk of stockout' means CRITICAL or HIGH — a filter of STOCKOUT_RISK = 'HIGH' alone silently drops the worst parts." ;
     ea:boundToColumn "supply_chain_analytics.fact_inventory_snapshot.STOCKOUT_RISK" ;
     ea:boundToView "supply_chain_analytics.metrics_inventory_snapshot" ;
     ea:boundToField "Stockout Risk" ;
     ea:aka "stockout risk", "stock risk", "risk band" ;
-    owl:equivalentClass [ a owl:Class ; owl:oneOf ( mfg:RiskLevel_LOW mfg:RiskLevel_MEDIUM mfg:RiskLevel_HIGH ) ] .
+    owl:equivalentClass [ a owl:Class ; owl:oneOf ( mfg:RiskLevel_LOW mfg:RiskLevel_MEDIUM mfg:RiskLevel_HIGH mfg:RiskLevel_CRITICAL ) ] .
 mfg:RiskLevel_LOW a mfg:RiskLevel ;
     rdfs:label "LOW" .
 mfg:RiskLevel_MEDIUM a mfg:RiskLevel ;
     rdfs:label "MEDIUM" .
 mfg:RiskLevel_HIGH a mfg:RiskLevel ;
     rdfs:label "HIGH" .
+mfg:RiskLevel_CRITICAL a mfg:RiskLevel ;
+    rdfs:label "CRITICAL" .
 
 
 ##############################################################################
@@ -365,7 +367,7 @@ ea:CampaignSpend a owl:Class ;
     rdfs:comment "Actual money spent running campaigns: SUM(ACTUAL_SPEND), in INR. One of the three senses of the ambiguous word cost." ;
     ea:boundToView "marketing_analytics.metrics_campaign_performance" ;
     ea:boundToMeasure "total_spend" ;
-    ea:aka "spend", "ad spend", "campaign spend", "marketing cost" .
+    ea:aka "ad spend", "campaign spend" .
 
 
 ##############################################################################
@@ -501,13 +503,15 @@ mfg:QualityInspection a owl:Class ;
     ea:aka "inspection", "incoming inspection", "quality check" .
 
 mfg:QualityDisposition a owl:Class ;
-    rdfs:comment "The decision made about material found defective at inspection. The gold slice carries the short labels below; the enterprise ontology spells the last two as REWORK AT SOURCE and RETURN TO SUPPLIER — bind to the values that are actually in the column." ;
+    rdfs:comment "The decision made about material found defective at inspection. The gold slice carries the short labels below; the enterprise ontology spells the last two as REWORK AT SOURCE and RETURN TO SUPPLIER — bind to the values that are actually in the column. In gold_dev_analytics only SORT_AND_USE and ACCEPT occur; SORT_AND_USE is the underscore spelling of the same disposition as 'ACCEPT & SORT'." ;
     ea:boundToColumn "supply_chain_analytics.fact_supplier_quality.DISPOSITION" ;
-    owl:equivalentClass [ a owl:Class ; owl:oneOf ( mfg:QualityDisposition_ACCEPT mfg:QualityDisposition_ACCEPT_AND_SORT mfg:QualityDisposition_REWORK_AT_SOURCE mfg:QualityDisposition_RETURN_TO_SUPPLIER ) ] .
+    owl:equivalentClass [ a owl:Class ; owl:oneOf ( mfg:QualityDisposition_ACCEPT mfg:QualityDisposition_ACCEPT_AND_SORT mfg:QualityDisposition_SORT_AND_USE mfg:QualityDisposition_REWORK_AT_SOURCE mfg:QualityDisposition_RETURN_TO_SUPPLIER ) ] .
 mfg:QualityDisposition_ACCEPT a mfg:QualityDisposition ;
     rdfs:label "ACCEPT" .
 mfg:QualityDisposition_ACCEPT_AND_SORT a mfg:QualityDisposition ;
     rdfs:label "ACCEPT & SORT" .
+mfg:QualityDisposition_SORT_AND_USE a mfg:QualityDisposition ;
+    rdfs:label "SORT_AND_USE" .
 mfg:QualityDisposition_REWORK_AT_SOURCE a mfg:QualityDisposition ;
     rdfs:label "REWORK" .
 mfg:QualityDisposition_RETURN_TO_SUPPLIER a mfg:QualityDisposition ;
@@ -599,19 +603,25 @@ mfg:modelProducedAtPlant a owl:ObjectProperty ;
     rdfs:comment "Inverse of plantProducesModel." ;
     owl:inverseOf mfg:plantProducesModel .
 
-mfg:dealerSellsModel a owl:ObjectProperty ;
-    rdfs:domain mfg:Dealer ;
-    rdfs:range mfg:VehicleModel ;
-    rdfs:comment "This dealer has booked orders for this vehicle model." ;
-    ea:edgeFrom "revenue_analytics.fact_sales_order" ;
-    ea:edgeSubjectKey "DEALER_KEY" ;
-    ea:edgeObjectKey "MODEL_KEY" .
-
-mfg:modelSoldByDealer a owl:ObjectProperty ;
-    rdfs:domain mfg:VehicleModel ;
-    rdfs:range mfg:Dealer ;
-    rdfs:comment "Inverse of dealerSellsModel." ;
-    owl:inverseOf mfg:dealerSellsModel .
+# PARKED — see section 8, "MODEL_KEY outage". fact_sales_order.MODEL_KEY is -1 on
+# every row in gold_dev_analytics, so this edge materializes to zero rows and trips
+# the empty_rel assertion in assert_kg_integrity. Uncomment both properties and run
+# ./deploy.sh regen-tags the moment the silver -> gold sales mapping is fixed; no
+# other change is needed.
+#
+# mfg:dealerSellsModel a owl:ObjectProperty ;
+#     rdfs:domain mfg:Dealer ;
+#     rdfs:range mfg:VehicleModel ;
+#     rdfs:comment "This dealer has booked orders for this vehicle model." ;
+#     ea:edgeFrom "revenue_analytics.fact_sales_order" ;
+#     ea:edgeSubjectKey "DEALER_KEY" ;
+#     ea:edgeObjectKey "MODEL_KEY" .
+#
+# mfg:modelSoldByDealer a owl:ObjectProperty ;
+#     rdfs:domain mfg:VehicleModel ;
+#     rdfs:range mfg:Dealer ;
+#     rdfs:comment "Inverse of dealerSellsModel." ;
+#     owl:inverseOf mfg:dealerSellsModel .
 
 mfg:partStockedAt a owl:ObjectProperty ;
     rdfs:domain mfg:Part ;
@@ -631,8 +641,8 @@ mfg:warehouseStocksPart a owl:ObjectProperty ;
 mfg:supplierSuppliesPart a owl:ObjectProperty ;
     rdfs:domain mfg:Supplier ;
     rdfs:range mfg:Part ;
-    rdfs:comment "This supplier has delivered this part for incoming inspection." ;
-    ea:edgeFrom "supply_chain_analytics.fact_supplier_quality" ;
+    rdfs:comment "This supplier is contracted to supply this part. Contract-derived, so it holds for every contracted part whether or not that part has been inspected, delivered against or procured. Multi-sourced parts carry one edge per supplier." ;
+    ea:edgeFrom "ontology.part_supplier_sourcing" ;
     ea:edgeSubjectKey "SUPPLIER_KEY" ;
     ea:edgeObjectKey "PART_KEY" .
 
@@ -715,4 +725,19 @@ mfg:segmentTargetedByCampaign a owl:ObjectProperty ;
 #
 #   Add each as an object property here the moment the backing table lands;
 #   the generator will pick it up with no other change.
+#
+#   MODEL_KEY outage (data, not modeling)
+#   Dealer -> VehicleModel  the join exists in the model but not in the data:
+#                           revenue_analytics.fact_sales_order.MODEL_KEY is -1 on
+#                           all 1,100 rows, so dealerSellsModel materialized to
+#                           zero edges and tripped the empty_rel assertion. The
+#                           property is commented out in section 7, not deleted.
+#                           Same load also leaves ORDER_AMOUNT, DISCOUNT_AMOUNT,
+#                           QUANTITY and STATUS null, which is why total_revenue,
+#                           discount_percent, total_quantity, order_status and
+#                           delivered_order_revenue all return NULL. Marketing has
+#                           the same shape of defect in ROAS and LEADS, breaking
+#                           weighted_roas and cost_per_lead.
+#                           Fix upstream in silver -> gold, then uncomment and
+#                           re-run ./deploy.sh regen-tags.
 ##############################################################################

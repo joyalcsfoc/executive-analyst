@@ -40,7 +40,7 @@ EXECUTE IMMEDIATE
   UNION ALL
   SELECT 'unknown_rel', rel
   FROM " || {{catalog}} || ".ontology.kg_edges
-  WHERE rel NOT IN ('campaignRunsOnChannel', 'campaignTargetsSegment', 'dealerSellsModel', 'lineProducesModel', 'partStockedAt', 'plantHasLine', 'plantProducesModel', 'supplierSuppliesPart')
+  WHERE rel NOT IN ('campaignRunsOnChannel', 'campaignTargetsSegment', 'lineProducesModel', 'partStockedAt', 'plantHasLine', 'plantProducesModel', 'supplierSuppliesPart')
   GROUP BY rel
 
   UNION ALL
@@ -53,7 +53,7 @@ EXECUTE IMMEDIATE
   SELECT 'domain_range_violation',
     concat_ws(' ', e.rel, ':', e.subject_type, '->', e.object_type)
   FROM " || {{catalog}} || ".ontology.kg_edges e
-  WHERE (e.rel = 'campaignRunsOnChannel' AND (e.subject_type <> 'MarketingCampaign' OR e.object_type <> 'CampaignChannel')) OR (e.rel = 'campaignTargetsSegment' AND (e.subject_type <> 'MarketingCampaign' OR e.object_type <> 'CustomerSegment')) OR (e.rel = 'dealerSellsModel' AND (e.subject_type <> 'Dealer' OR e.object_type <> 'VehicleModel')) OR (e.rel = 'lineProducesModel' AND (e.subject_type <> 'ProductionLine' OR e.object_type <> 'VehicleModel')) OR (e.rel = 'partStockedAt' AND (e.subject_type <> 'Part' OR e.object_type <> 'Warehouse')) OR (e.rel = 'plantHasLine' AND (e.subject_type <> 'Plant' OR e.object_type <> 'ProductionLine')) OR (e.rel = 'plantProducesModel' AND (e.subject_type <> 'Plant' OR e.object_type <> 'VehicleModel')) OR (e.rel = 'supplierSuppliesPart' AND (e.subject_type <> 'Supplier' OR e.object_type <> 'Part'))
+  WHERE (e.rel = 'campaignRunsOnChannel' AND (e.subject_type <> 'MarketingCampaign' OR e.object_type <> 'CampaignChannel')) OR (e.rel = 'campaignTargetsSegment' AND (e.subject_type <> 'MarketingCampaign' OR e.object_type <> 'CustomerSegment')) OR (e.rel = 'lineProducesModel' AND (e.subject_type <> 'ProductionLine' OR e.object_type <> 'VehicleModel')) OR (e.rel = 'partStockedAt' AND (e.subject_type <> 'Part' OR e.object_type <> 'Warehouse')) OR (e.rel = 'plantHasLine' AND (e.subject_type <> 'Plant' OR e.object_type <> 'ProductionLine')) OR (e.rel = 'plantProducesModel' AND (e.subject_type <> 'Plant' OR e.object_type <> 'VehicleModel')) OR (e.rel = 'supplierSuppliesPart' AND (e.subject_type <> 'Supplier' OR e.object_type <> 'Part'))
   GROUP BY e.rel, e.subject_type, e.object_type
 
   UNION ALL
@@ -64,7 +64,7 @@ EXECUTE IMMEDIATE
 
   UNION ALL
   SELECT 'empty_rel', r.rel
-  FROM (SELECT explode(array('campaignRunsOnChannel', 'campaignTargetsSegment', 'dealerSellsModel', 'lineProducesModel', 'partStockedAt', 'plantHasLine', 'plantProducesModel', 'supplierSuppliesPart')) AS rel) r
+  FROM (SELECT explode(array('campaignRunsOnChannel', 'campaignTargetsSegment', 'lineProducesModel', 'partStockedAt', 'plantHasLine', 'plantProducesModel', 'supplierSuppliesPart')) AS rel) r
   LEFT JOIN " || {{catalog}} || ".ontology.kg_edges e ON e.rel = r.rel
   GROUP BY r.rel HAVING COUNT(e.rel) = 0
 ) ORDER BY check_name, detail";
@@ -94,7 +94,7 @@ EXECUTE IMMEDIATE
   UNION ALL
   SELECT 'unknown_rel'
   FROM " || {{catalog}} || ".ontology.kg_edges
-  WHERE rel NOT IN ('campaignRunsOnChannel', 'campaignTargetsSegment', 'dealerSellsModel', 'lineProducesModel', 'partStockedAt', 'plantHasLine', 'plantProducesModel', 'supplierSuppliesPart')
+  WHERE rel NOT IN ('campaignRunsOnChannel', 'campaignTargetsSegment', 'lineProducesModel', 'partStockedAt', 'plantHasLine', 'plantProducesModel', 'supplierSuppliesPart')
 
   UNION ALL
   SELECT 'unknown_node_type'
@@ -104,7 +104,7 @@ EXECUTE IMMEDIATE
   UNION ALL
   SELECT 'domain_range_violation'
   FROM " || {{catalog}} || ".ontology.kg_edges e
-  WHERE (e.rel = 'campaignRunsOnChannel' AND (e.subject_type <> 'MarketingCampaign' OR e.object_type <> 'CampaignChannel')) OR (e.rel = 'campaignTargetsSegment' AND (e.subject_type <> 'MarketingCampaign' OR e.object_type <> 'CustomerSegment')) OR (e.rel = 'dealerSellsModel' AND (e.subject_type <> 'Dealer' OR e.object_type <> 'VehicleModel')) OR (e.rel = 'lineProducesModel' AND (e.subject_type <> 'ProductionLine' OR e.object_type <> 'VehicleModel')) OR (e.rel = 'partStockedAt' AND (e.subject_type <> 'Part' OR e.object_type <> 'Warehouse')) OR (e.rel = 'plantHasLine' AND (e.subject_type <> 'Plant' OR e.object_type <> 'ProductionLine')) OR (e.rel = 'plantProducesModel' AND (e.subject_type <> 'Plant' OR e.object_type <> 'VehicleModel')) OR (e.rel = 'supplierSuppliesPart' AND (e.subject_type <> 'Supplier' OR e.object_type <> 'Part'))
+  WHERE (e.rel = 'campaignRunsOnChannel' AND (e.subject_type <> 'MarketingCampaign' OR e.object_type <> 'CampaignChannel')) OR (e.rel = 'campaignTargetsSegment' AND (e.subject_type <> 'MarketingCampaign' OR e.object_type <> 'CustomerSegment')) OR (e.rel = 'lineProducesModel' AND (e.subject_type <> 'ProductionLine' OR e.object_type <> 'VehicleModel')) OR (e.rel = 'partStockedAt' AND (e.subject_type <> 'Part' OR e.object_type <> 'Warehouse')) OR (e.rel = 'plantHasLine' AND (e.subject_type <> 'Plant' OR e.object_type <> 'ProductionLine')) OR (e.rel = 'plantProducesModel' AND (e.subject_type <> 'Plant' OR e.object_type <> 'VehicleModel')) OR (e.rel = 'supplierSuppliesPart' AND (e.subject_type <> 'Supplier' OR e.object_type <> 'Part'))
 
   UNION ALL
   SELECT 'empty_node_type'
@@ -114,12 +114,12 @@ EXECUTE IMMEDIATE
 
   UNION ALL
   SELECT 'empty_rel'
-  FROM (SELECT explode(array('campaignRunsOnChannel', 'campaignTargetsSegment', 'dealerSellsModel', 'lineProducesModel', 'partStockedAt', 'plantHasLine', 'plantProducesModel', 'supplierSuppliesPart')) AS rel) r
+  FROM (SELECT explode(array('campaignRunsOnChannel', 'campaignTargetsSegment', 'lineProducesModel', 'partStockedAt', 'plantHasLine', 'plantProducesModel', 'supplierSuppliesPart')) AS rel) r
   LEFT JOIN " || {{catalog}} || ".ontology.kg_edges e ON e.rel = r.rel
   GROUP BY r.rel HAVING COUNT(e.rel) = 0
 )
 SELECT CASE WHEN COUNT(*) = 0
-  THEN 'PASS: kg_nodes/kg_edges match the TBox (11 classes, 8 relations)'
+  THEN 'PASS: kg_nodes/kg_edges match the TBox (11 classes, 7 relations)'
   ELSE raise_error(concat('FAIL: knowledge-graph integrity violated: ', concat_ws(', ', collect_set(check_name))))
 END AS result
 FROM violations";

@@ -228,18 +228,19 @@
       bounded Genie Agent space. What is left is quieter and much harder to spot.
     </p>
     <p>
-      The bottom two setups scored <strong>27%</strong> and <strong>40%</strong> — one checkpoint
-      apart — and failed at different things. Both told us which warehouses and parts a supplier
-      outage would hit, and both left out a quarter of the sourcing graph. One of the three
-      locations about to run out of stock was in the part they missed. Neither warned us anything
-      was missing. Setup 3 scored <strong>87%</strong>: the only one that gave us the full exposure
-      list, the date the stock figures came from, and advice covering every at-risk location.
+      The bottom two setups scored <strong>33%</strong> and <strong>53%</strong> — three checkpoints
+      apart — and returned the identical incomplete answer. Both told us which warehouses and parts
+      a supplier outage would hit, and both left out a quarter of the sourcing graph. One of the
+      three locations about to run out of stock was in the part they missed. Neither warned us
+      anything was missing. Setup 3 scored <strong>87%</strong>: the only one that gave us the full
+      exposure list, priced it, and covered every at-risk location.
     </p>
     <p>
-      Setup 3 also lost one checkpoint outright to the semantic layer. Setup 2 put a price on the
-      exposure — <strong>₹53.89 Lakh</strong>, broken down by part and by warehouse. Setup 3
-      reported units and never turned them into money. We built the graph for navigation only, and
-      on this question that choice cost us.
+      The missing part is also the expensive one. Setup 1 priced its answer at
+      <strong>₹53.9 Lakh</strong> and Setup 3 priced the complete set at <strong>₹1.07 Cr</strong> —
+      the one part the lower setups never saw is worth as much as everything they found. The
+      semantic layer priced that same half exposure at <strong>₹53.89 Lakh</strong> — dated,
+      classified and caveated, which only makes the incomplete answer more convincing.
     </p>
   </div> -->
 </header>
@@ -249,27 +250,30 @@
   <h4>Verified accuracy across both questions · 15 checkpoints each</h4>
   <div class="bars">
     <div class="bar-row">
-      <div class="lbl"><b>1</b> Agent, tables only</div>
-      <div class="track"><div class="fill a" style="width:27%"></div></div>
-      <div class="pct">27%</div><div class="of">4 of 15</div>
+      <div class="lbl"><b>1</b> Out of box genie agent with table source</div>
+      <div class="track"><div class="fill a" style="width:33%"></div></div>
+      <div class="pct">33%</div><div class="of">5 of 15</div>
     </div>
     <div class="bar-row">
-      <div class="lbl"><b>2</b> Agent, semantic layer</div>
-      <div class="track"><div class="fill b" style="width:40%"></div></div>
-      <div class="pct">40%</div><div class="of">6 of 15</div>
+      <div class="lbl"><b>2</b> Genie Agent with source semantic layer and instructions</div>
+      <div class="track"><div class="fill b" style="width:53%"></div></div>
+      <div class="pct">53%</div><div class="of">8 of 15</div>
     </div>
     <div class="bar-row">
-      <div class="lbl"><b>3</b> Agent + ontology + KG</div>
+      <div class="lbl"><b>3</b> Genie Agent with ontology and knowledge graph</div>
       <div class="track"><div class="fill c" style="width:87%"></div></div>
       <div class="pct">87%</div><div class="of">13 of 15</div>
     </div>
   </div>
   <p class="note">
-    Each rung scores higher than the one below, but the steps are not the same size. The semantic
-    layer adds <strong>13 points</strong>, all of it from picking the right word on Question 1 and
-    pricing the answer on Question 2. It adds nothing to completeness. The ontology and graph add
-    <strong>47 points</strong>, almost all of it completeness. Two different problems, two
-    different layers. Neither does the other's job.
+    Each rung scores higher than the one below, but the steps are nothing like the same size. The
+    semantic layer nets <strong>three checkpoints out of fifteen</strong>, and every one of them is
+    about <em>presentation</em>: it asks before guessing which “spend” we meant, it declines to
+    publish a figure at the wrong grain, it dates the figures it does publish. It adds
+    <strong>nothing at all to completeness</strong> — the rows it returns on Question 2 are the same
+    rows the raw-tables space returns, to the row. The ontology and graph add <strong>34
+    points</strong>, almost all of it completeness. Two different problems, two different layers.
+    Neither does the other's job.
   </p>
 </section>
 
@@ -287,9 +291,9 @@
     <thead>
       <tr>
         <th style="width:17%"></th>
-        <th style="width:27%">1 · Tables only</th>
-        <th style="width:27%">2 · + Semantic layer</th>
-        <th style="width:29%">3 · + Ontology &amp; KG</th>
+        <th style="width:27%">1 · Out of box genie agent with table source</th>
+        <th style="width:27%">2 · Genie Agent with source semantic layer and instructions</th>
+        <th style="width:29%">3 · Genie agent with source semantic layer, ontology and knowledge graph</th>
       </tr>
     </thead>
     <tbody>
@@ -297,7 +301,7 @@
         <td class="k">Data sources</td>
         <td>15 dims + 5 facts (20)</td>
         <td>+ <strong>5 metric views</strong> (25)</td>
-        <td><strong>the same 25</strong></td>
+        <td><strong>25</strong></td>
       </tr>
       <tr>
         <td class="k">Descriptions &amp; synonyms</td>
@@ -331,20 +335,24 @@
       </tr>
       <tr>
         <td class="k">Typical failure</td>
-        <td>Answers one reading of the question, then says no other reading existed</td>
-        <td>Correct maths over an incomplete list, every time</td>
-        <td>Answers narrowly, but says what it measured</td>
+        <td>Answers one reading of the question, and prices an incomplete list as the total</td>
+        <td>The same incomplete list — priced, dated, and flagged as inspection-only</td>
+        <td>Complete, priced and classified, but never dated</td>
       </tr>
     </tbody>
   </table>
   </div>
 
   <p>
-    <strong>The semantic layer bought us nothing on the relationship question.</strong> Five
-    certified metric views are the only difference between Setup 1 and Setup 2. Setup 2 still came
-    back with the same incomplete part list, using about twice as many queries to get there. A
-    semantic layer certifies how we calculate a number along a path that already exists. It cannot
-    build a new path, and it cannot tell us we took the wrong one.
+    <strong>The semantic layer bought us a better-presented version of the same wrong answer.</strong>
+    Five certified metric views are the only difference between Setup 1 and Setup 2, and Setup 2 came
+    back with the <em>identical</em> nine warehouse-part rows and, to the rupee, the identical total:
+    ₹53.89 Lakh against Setup 1's ₹53.9 Lakh. It presents them better in every way that does not
+    involve reaching further — it dates the snapshot, it reconciles by part and by warehouse, it
+    classifies each part, and it prints a note saying the list only covers parts that have been
+    inspected. A semantic layer
+    certifies how we calculate a number along a path that already exists. It cannot build a new path,
+    and it cannot tell us we took the wrong one.
   </p>
   <p>
     <strong>What Setup 3 adds is the ontology, and the ontology is what reaches the
@@ -382,19 +390,19 @@
 
   <div class="cards">
     <div class="card">
-      <div class="cfg"><b>1</b> · Tables only</div>
+      <div class="cfg"><b>1</b> · Out of box genie agent with table source</div>
       <div class="sub">15 dims + 5 facts</div>
       <div class="score">1<span style="font-size:13pt; color:var(--ink-3)">/6</span></div>
       <div class="verd bad">Answered one of three</div>
     </div>
     <div class="card">
-      <div class="cfg"><b>2</b> · Semantic layer</div>
+      <div class="cfg"><b>2</b> · Genie Agent with semantic layer and instructions</div>
       <div class="sub">+ 5 metric views, instructions</div>
       <div class="score">3<span style="font-size:13pt; color:var(--ink-3)">/6</span></div>
       <div class="verd part">Asked, but silently</div>
     </div>
     <div class="card win">
-      <div class="cfg"><b>3</b> · Ontology + KG</div>
+      <div class="cfg"><b>3</b> · Genie agent with source semantic layer, ontology and knowledge graph</div>
       <div class="sub">+ TTL grounding, snippets, UDFs</div>
       <div class="score">5<span style="font-size:13pt; color:var(--ink-3)">/6</span></div>
       <div class="verd ok">Asked, and showed its working</div>
@@ -403,19 +411,19 @@
 
   <div class="shots">
     <div class="shot">
-      <div class="shot-hd"><b>1</b> · Tables only</div>
+      <div class="shot-hd"><b>1</b> · Out of box genie agent with table source</div>
       <img src="images/cost-genie-tables-only.png" alt="Genie Agent with tables only answering the spend question with a single marketing figure of 4.4 crore">
-      <div class="cap"><span class="f">cost-genie-tables-only.png</span><span>Answered on one sense · thinking collapsed · Sources (2)</span></div>
+      <div class="cap"><span class="f">Out of box genie agent with table source</span><span>Answered on one sense · thinking collapsed · Sources (2)</span></div>
     </div>
     <div class="shot">
-      <div class="shot-hd"><b>2</b> · Semantic layer</div>
+      <div class="shot-hd"><b>2</b> · Genie Agent with semantic layer and instructions</div>
       <img src="images/cost-genie-semantic-layer.png" alt="Genie Agent with semantic layer, thinking expanded, asking which of three spend metrics was meant">
-      <div class="cap"><span class="f">cost-genie-semantic-layer.png</span><span>Asked · trace restates the reply · no sources</span></div>
+      <div class="cap"><span class="f">Genie agent with source semantic layer and instructions</span><span>Asked · trace restates the reply · no sources</span></div>
     </div>
     <div class="shot">
-      <div class="shot-hd"><b>3</b> · Ontology + KG</div>
+      <div class="shot-hd"><b>3</b> · Genie agent with source semantic layer, ontology and knowledge graph</div>
       <img src="images/cost-genie-ontology.png" alt="Genie Agent with ontology showing a Definitions used reasoning block before asking which spend was meant">
-      <div class="cap"><span class="f">cost-genie-ontology.png</span><span>Asked · “Definitions used” block · period rule stated</span></div>
+      <div class="cap"><span class="f">Genie agent with source semantic layer, ontology and knowledge graph</span><span>Asked · “Definitions used” block · period rule stated</span></div>
     </div>
   </div>
 
@@ -426,9 +434,9 @@
       <tr>
         <th style="width:19%">Checkpoint</th>
         <th style="width:21%">Governed by</th>
-        <th style="width:20%">1 · Tables</th>
-        <th style="width:20%">2 · Semantic</th>
-        <th style="width:20%">3 · + Ontology</th>
+        <th style="width:20%">1 · Out of box genie agent with table source</th>
+        <th style="width:20%">2 · Genie Agent with semantic layer and instructions</th>
+        <th style="width:20%">3 · Genie agent with source semantic layer, ontology and knowledge graph</th>
       </tr>
     </thead>
     <tbody>
@@ -508,7 +516,7 @@
 
   <div class="q">
     <div class="tag">Q2</div>
-    <div class="txt">“If Supplier 001 goes down tomorrow, which warehouses and parts are exposed?”</div>
+    <div class="txt">“If Aravalli Precision Industries goes down tomorrow, which warehouses and parts are exposed?”</div>
   </div>
 
   <p>
@@ -523,68 +531,80 @@
 
   <div class="cards">
     <div class="card">
-      <div class="cfg"><b>1</b> · Tables only</div>
-      <div class="sub">1 correction round · 8 query steps</div>
-      <div class="score">3<span style="font-size:13pt; color:var(--ink-3)">/9</span></div>
-      <div class="verd bad">Incomplete, unpriced</div>
+      <div class="cfg"><b>1</b> · Out of box genie agent with table source</div>
+      <div class="sub">1 correction round · 7 query steps</div>
+      <div class="score">4<span style="font-size:13pt; color:var(--ink-3)">/9</span></div>
+      <div class="verd bad">Half the exposure, priced to the rupee</div>
     </div>
     <div class="card">
-      <div class="cfg"><b>2</b> · Semantic layer</div>
-      <div class="sub">6 correction rounds · ~17 query steps</div>
-      <div class="score">3<span style="font-size:13pt; color:var(--ink-3)">/9</span></div>
-      <div class="verd bad">Incomplete, priced exactly</div>
+      <div class="cfg"><b>2</b> · Genie Agent with semantic layer and instructions</div>
+      <div class="sub">2 corrections · 13 query steps</div>
+      <div class="score">5<span style="font-size:13pt; color:var(--ink-3)">/9</span></div>
+      <div class="verd bad">Same short list — priced, dated, classified</div>
     </div>
     <div class="card win">
-      <div class="cfg"><b>3</b> · Ontology + KG</div>
-      <div class="sub">0 corrections · ~11 query steps</div>
+      <div class="cfg"><b>3</b> · Genie agent with source semantic layer, ontology and knowledge graph</div>
+      <div class="sub">0 corrections · 12 query steps</div>
       <div class="score">8<span style="font-size:13pt; color:var(--ink-3)">/9</span></div>
-      <div class="verd ok">Complete, dated, unpriced</div>
+      <div class="verd ok">Complete and priced — undated</div>
     </div>
   </div>
 
   <div class="rows">
     <div class="row"><div class="rk">Setup 1 said</div><div class="rv">
-      “<strong>6 warehouses and 3 parts</strong> exposed, with 2 locations facing immediate stockout
-      risk.” Everything about the three parts it found holds up. No money anywhere, no snapshot date.
+      “<strong>Critical Exposure: 3 Parts Across 6 Warehouses</strong> … a total inventory value of
+      <strong>₹53.9 lakhs</strong>”, with “two locations facing critical/high stockout risk”. Every
+      figure about the three parts it found holds up, down to part class and subsystem. Its own trace
+      says how it got there: “I incorrectly joined the supplier table. Let me correct this by finding
+      which parts are actually supplied … <strong>through the supplier quality data</strong>.”
     </div></div>
     <div class="row"><div class="rk">Setup 2 said</div><div class="rv">
-      “<strong>3 Parts Across 6 Warehouses Exposed</strong> … total inventory value
-      <strong>₹53.89 Lakh</strong>” — per part, per warehouse and in total, reconciling to the rupee.
-      Same three parts as Setup 1, after six repair rounds instead of one. It also queried part
-      criticality twice and never reported it.
+      “<strong>₹53.89 Lakh of inventory across 3 parts and 6 warehouses</strong> would be at risk
+      (as of <strong>September 4, 2026</strong>)” — the <strong>identical nine warehouse-part
+      rows</strong> Setup 1 returned, and the same total to the rupee, reached in thirteen steps
+      after two rounds of correcting its own supplier query. It is the best-presented of the three:
+      exposure broken out per part and per warehouse, every row banded CRITICAL / HIGH / MEDIUM /
+      LOW, each part tagged with subsystem, criticality and ABC class, and the only answer on this
+      page that says <em>as of when</em>. It also prints the honest caveat: this analysis rests on
+      inspection records from <code>fact_supplier_quality</code> … “parts contracted from Aravalli
+      Precision Industries with no inspection history <strong>will not appear in this list</strong>,
+      so the actual exposure may be broader.” It cannot say which ones, or what they are worth.
     </div></div>
     <div class="row"><div class="rk">Setup 3 said</div><div class="rv">
-      “<strong>4 Parts Across 7 Warehouses</strong> … 3 locations at critical or high stockout risk
-      <strong>as of September 4, 2026</strong>.” The extra part is <strong>Oil Seal</strong> at
-      Manesar Plant Store — HIGH risk, 1,521 units against 1,819 safety stock, 13 days of cover. It
-      also turned up <strong>Chennai RDC</strong>, the seventh exposed warehouse, and classified
-      every part B/C with subsystem. No rupee figure anywhere.
+      “<strong>4 parts across 7 warehouses</strong> would be exposed, with <strong>₹1.07 Cr</strong>
+      in total inventory at risk”, and “three warehouses face immediate stockout risk”. The extra
+      part is <strong>Oil Seal</strong> at Manesar Plant Store — HIGH risk, 1.5K on hand against 1.8K
+      safety stock, 13 days of cover. It also turned up <strong>Chennai RDC</strong>, the seventh
+      exposed warehouse, classified all four parts B/C with subsystem, and reconciled the money per
+      part and per warehouse. Its trace names the gap out loud: “check if there’s an Oil Seal part in
+      inventory (<strong>found in the knowledge graph but not in quality records</strong>)”.
     </div></div>
   </div>
 
   <div class="shots">
     <div class="shot">
-      <div class="shot-hd"><b>1</b> · Tables only — 3 parts, 6 warehouses</div>
-      <img src="images/supplier-genie-tables-only.png" alt="Genie Agent with tables only reporting 6 warehouses and 3 parts exposed to a Supplier 001 outage">
-      <div class="cap"><span class="f">supplier-genie-tables-only.png</span><span>8 steps · 1 correction · Sources (5)</span></div>
+      <div class="shot-hd"><b>1</b> · Out of box genie agent with table source — 3 parts, 6 warehouses, ₹53.9 L</div>
+      <img src="images/genie-agent-out-of-box.png" alt="Genie Agent with tables only reporting 3 parts across 6 warehouses worth 53.9 lakhs and two locations at stockout risk after correcting a bad supplier join">
+      <div class="cap"><span class="f">Out of box genie agent with table source</span><span>7 steps · 1 correction · Sources (5)</span></div>
     </div>
     <div class="shot">
-      <div class="shot-hd"><b>2</b> · Semantic layer — 3 parts, ₹53.89 L</div>
-      <img src="images/supplier-genie-semantic-layer.png" alt="Genie Agent with semantic layer reporting 3 parts across 6 warehouses worth 53.89 Lakh after six rounds of query corrections">
-      <div class="cap"><span class="f">supplier-genie-semantic-layer.png</span><span>~17 steps · 6 corrections · Sources (5)</span></div>
+      <div class="shot-hd"><b>2</b> · Genie Agent with semantic layer and instructions — the same 3 parts, ₹53.89 L, dated</div>
+      <img src="images/genie-agent-with-semantic-layer%20(3).png" alt="Genie Agent with semantic layer reporting the same three parts across six warehouses, totalling 53.89 lakh as of September 4 2026, each part classified by criticality, with a note that parts never inspected will not appear">
+      <div class="cap"><span class="f">Genie agent with source semantic layer and instructions</span><span>13 steps · 2 corrections · Sources (4)</span></div>
     </div>
     <div class="shot">
-      <div class="shot-hd"><b>3</b> · Ontology + KG — 4 parts, 7 warehouses</div>
-      <img src="images/supplier-genie-ontology.png" alt="Genie Agent with ontology and knowledge graph reporting 4 parts across 7 warehouses with three at-risk locations as of September 4 2026">
-      <div class="cap"><span class="f">supplier-genie-ontology.png</span><span>~11 steps · 0 corrections · Sources (5)</span></div>
+      <div class="shot-hd"><b>3</b> · Genie agent with source semantic layer, ontology and knowledge graph — 4 parts, 7 warehouses, ₹1.07 Cr</div>
+      <img src="images/genie-agent-with-ontology-layer.png" alt="Genie Agent with ontology and knowledge graph reporting 4 parts across 7 warehouses worth 1.07 crore with three warehouses at immediate stockout risk">
+      <div class="cap"><span class="f">Genie agent with source semantic layer, ontology and knowledge graph</span><span>12 steps · 0 corrections · Sources (4)</span></div>
     </div>
   </div>
 
   <p class="note">
-    Setup 2 is our strongest argument for the ontology layer, and it makes that argument by being
-    <em>good</em>. It is not sloppy. It is governed, its measures are certified, its maths adds up,
-    and it repeats. It is also missing a quarter of the answer, and every one of those strengths
-    makes the gap harder to see.
+    <strong>The part they missed is the expensive one.</strong> Oil Seal carries ₹53.2 Lakh of stock
+    across four warehouses. Setups 1 and 2 priced their entire answers at ₹53.9 Lakh and ₹53.89 Lakh
+    — so the single part neither could see is worth as much as everything they found put together.
+    Their totals are not slightly low. They are half. Setup 2's total is the more dangerous of the
+    two precisely because it is dated, classified and reconciled.
   </p>
 
   <div class="legend">Nine checkpoints · ✓ correct · ◐ partial, uncounted · ✗ wrong or absent</div>
@@ -594,74 +614,74 @@
       <tr>
         <th style="width:19%">Checkpoint</th>
         <th style="width:20%">Governed by</th>
-        <th style="width:20%">1 · Tables</th>
-        <th style="width:20%">2 · Semantic</th>
-        <th style="width:21%">3 · + Ontology</th>
+        <th style="width:20%">1 · Out of box genie agent with table source</th>
+        <th style="width:20%">2 · Genie Agent with semantic layer and instructions</th>
+        <th style="width:21%">3 · Genie agent with source semantic layer, ontology and knowledge graph</th>
       </tr>
     </thead>
     <tbody>
       <tr>
         <td class="k">Supplier entity resolved</td>
-        <td class="truth">Supplier 001 · Tier-1 · Gurgaon</td>
-        <td><span class="m ok">✓</span> resolved</td>
-        <td><span class="m ok">✓</span> after a name probe and two failed queries</td>
-        <td><span class="m ok">✓</span> one <code>kg_find_node</code></td>
+        <td class="truth">Aravalli Precision Industries · SUPPLIER_KEY 1 · Tier-1 · Gurgaon</td>
+        <td><span class="m ok">✓</span> resolved, after one bad supplier join</td>
+        <td><span class="m ok">✓</span> resolved, after two failed queries and a sample of every supplier name</td>
+        <td><span class="m ok">✓</span> one <code>kg_find_node</code>, plus the A rating</td>
       </tr>
       <tr>
         <td class="k">Part set complete</td>
         <td class="truth">4 — Oxygen Sensor, Tie Rod End, Oil Seal, Exhaust Gasket <em>(contract-derived)</em></td>
         <td><span class="m bad">✗</span> 3 — Oil Seal absent</td>
-        <td><span class="m bad">✗</span> 3 — Oil Seal absent</td>
+        <td><span class="m bad">✗</span> 3 — Oil Seal absent, but the gap is disclosed</td>
         <td><span class="m ok">✓</span> 4</td>
       </tr>
       <tr>
         <td class="k">Warehouse set complete</td>
         <td class="truth">7, including Chennai RDC</td>
         <td><span class="m bad">✗</span> 6</td>
-        <td><span class="m bad">✗</span> 6</td>
+        <td><span class="m bad">✗</span> 6 — the same six</td>
         <td><span class="m ok">✓</span> 7</td>
       </tr>
       <tr>
         <td class="k">Every immediate-risk location found</td>
-        <td class="truth">3 — Ahmedabad CRITICAL, Gurgaon HIGH, Manesar HIGH</td>
-        <td><span class="m bad">✗</span> 2 of 3, reported as the total</td>
-        <td><span class="m bad">✗</span> 2 of 3, reported as the total</td>
+        <td class="truth">3 — Ahmedabad CRITICAL, Gurgaon HIGH, Manesar HIGH <em>(Oil Seal)</em></td>
+        <td><span class="m bad">✗</span> “two locations”, reported as the total</td>
+        <td><span class="m bad">✗</span> 2 — “one CRITICAL and one HIGH”, plus Kolkata at MEDIUM</td>
         <td><span class="m ok">✓</span> 3</td>
       </tr>
       <tr>
         <td class="k">Risk bands over the closed enum</td>
         <td class="truth">mfg:RiskLevel = LOW / MEDIUM / HIGH / CRITICAL</td>
         <td><span class="m ok">✓</span> all four bands</td>
-        <td><span class="m ok">✓</span> all four bands</td>
-        <td><span class="m ok">✓</span> all four bands</td>
+        <td><span class="m ok">✓</span> all four, every row banded</td>
+        <td><span class="m ok">✓</span> bands used correctly</td>
       </tr>
       <tr>
         <td class="k">Snapshot date stated</td>
         <td class="truth">point-in-time grain; <code>is_current_snapshot</code></td>
         <td><span class="m bad">✗</span> undated</td>
+        <td><span class="m ok">✓</span> “as of September 4, 2026” — <em>the only one</em></td>
         <td><span class="m bad">✗</span> undated</td>
-        <td><span class="m ok">✓</span> “as of September 4, 2026”</td>
       </tr>
       <tr>
         <td class="k">Monetary exposure quantified</td>
-        <td class="truth">MEASURE(total_stock_valuation) on the current snapshot</td>
-        <td><span class="m bad">✗</span> days of supply and units only</td>
-        <td><span class="m ok">✓</span> ₹53.89 L, reconciling per part and per warehouse</td>
-        <td><span class="m bad">✗</span> units only, no currency anywhere</td>
+        <td class="truth">₹1.07 Cr over the complete part set, on the current snapshot</td>
+        <td><span class="m ok">✓</span> ₹53.9 L, per part and per warehouse — <em>over 3 parts</em></td>
+        <td><span class="m ok">✓</span> ₹53.89 L, per part and per warehouse — <em>over the same 3</em></td>
+        <td><span class="m ok">✓</span> ₹1.07 Cr, reconciling per part and per warehouse</td>
       </tr>
       <tr>
         <td class="k">Part criticality classified</td>
         <td class="truth">B / B / C / C, with subsystem</td>
-        <td><span class="m ok">✓</span> Class B, B, C</td>
-        <td><span class="m bad">✗</span> queried twice, never reported</td>
-        <td><span class="m ok">✓</span> B/C plus Powertrain / Chassis</td>
+        <td><span class="m ok">✓</span> B, B, C plus Powertrain / Chassis</td>
+        <td><span class="m ok">✓</span> B, C, B with subsystem and ABC class — <em>over the same 3</em></td>
+        <td><span class="m ok">✓</span> all four, B/C plus Powertrain / Chassis</td>
       </tr>
       <tr>
         <td class="k">Reached the answer without rewriting failed queries</td>
         <td class="truth">determinism and cost</td>
-        <td><span class="m part">◐</span> 1 correction round, 8 steps</td>
-        <td><span class="m bad">✗</span> 6 correction rounds, ~17 steps</td>
-        <td><span class="m ok">✓</span> none, ~11 steps</td>
+        <td><span class="m part">◐</span> 1 correction round, 7 steps</td>
+        <td><span class="m part">◐</span> 2 correction rounds, 13 steps</td>
+        <td><span class="m ok">✓</span> none, 12 steps</td>
       </tr>
     </tbody>
   </table>
@@ -670,23 +690,38 @@
   <div class="verdict">
     <h4>Verdict · Question 2</h4>
     <p>
-      The two lower setups tie at 3 of 9, and how they got there matters more than the tie. Setup 1
-      classified the parts and never priced them. Setup 2 priced them to the rupee and never
-      classified them. Neither found the fourth part, the seventh warehouse, or the third at-risk
-      location, and neither told us what date it was looking at. Both presented their totals as
-      totals.
+      <strong>Setups 1 and 2 returned the identical nine warehouse-part rows, and the identical
+      total.</strong> Not similar — identical: the same three parts, the same six warehouses,
+      ₹53.9 Lakh against ₹53.89 Lakh. Everything the semantic layer bought sits on top of that
+      unchanged row set. Setup 2 dates its snapshot, breaks exposure out per part and per warehouse,
+      bands every row, classifies every part by subsystem, criticality and ABC class, and reconciles
+      the money — and it is still missing a quarter of the answer and half the value. A certified
+      measure layer makes the number it reports trustworthy. It has no opinion about which rows go
+      into it.
     </p>
     <p>
-      This is not the model being smarter, and the matching sources prove it. Setups 2 and 3 got the
-      same 25 tables, and neither holds <code>dim_supplier_contract</code>, so <strong>no prompt will
-      ever get Setup 2 to the fourth part</strong>. That ceiling is built in. The fix is a
-      deployment, not a prompt.
+      To its credit, Setup 2 is the only setup that <strong>tells you it might be short</strong>:
+      “parts contracted from Aravalli Precision Industries with no inspection history will not appear
+      in this list, so the actual exposure may be broader.” That is
+      an honest caveat and an unactionable one. It cannot name the missing part, count it, or price
+      it — the table that would answer all three is the one the space cannot see. A reader gets a
+      warning with no way to act on it, which in practice reads as a disclaimer rather than a gap.
     </p>
     <p>
-      Setup 3's single loss is the fair counterweight, and it flips the ranking on the one thing an
-      executive is most likely to ask next. It gave us the complete picture and no money. Setup 2
-      gave us exact money over an incomplete picture. Of those two faults, the missing rupee column
-      is the one we can actually see.
+      This is not the model being smarter, and both traces say so in their own words. Setup 1 wrote
+      “find which parts are <em>actually</em> supplied … through the supplier quality data”; Setup 2
+      names the same inspection route in its note; Setup 3 wrote “found in the knowledge graph but
+      <em>not in quality records</em>”. Setups 2 and 3 got the same 25 tables, and neither holds
+      <code>dim_supplier_contract</code>, so <strong>no prompt will ever get Setup 2 to the fourth
+      part</strong>. That ceiling is built in. The fix is a deployment, not a prompt.
+    </p>
+    <p>
+      Setup 3's single loss is the snapshot date, which it shares with Setup 1 — and Setup 2 settles
+      the question of how hard that is to fix, because it already does it. An undated exposure number
+      looks exactly like a dated one; this is the cheapest fault on the page and now demonstrably an
+      instruction, not a deployment. One discrepancy is also worth settling before these go in front
+      of anyone: Setup 2 bands Kolkata RDC's Oxygen Sensor MEDIUM, while Setup 3's warehouse summary
+      files Kolkata under low risk.
     </p>
   </div>
 </section>
@@ -706,9 +741,12 @@
   <p>
     The lower two setups never had the contract register, so the inspection log was their only route.
     They took it and lost a quarter of the answer — <strong>3 of 4 parts, 75%</strong>, which is
-    exactly the ratio the inspection route yields across the whole catalog. We build the graph from
-    the contract register on purpose, because we already hit this same bug once, when we built the
-    graph the wrong way round:
+    exactly the ratio the inspection route yields across the whole catalog. Neither of them guessed
+    at this silently: Setup 1's trace says it will find the parts “through the supplier quality
+    data”, and Setup 3's says it is chasing a part “found in the knowledge graph but not in quality
+    records”. Both name the two tables. Only one of them could see both. We build the graph from the
+    contract register on purpose, because we already hit this same bug once, when we built the graph
+    the wrong way round:
   </p>
 
   <pre>-- src/ontology/edge_sources.sql   (hand-written, runs before materialize_kg)
@@ -738,7 +776,7 @@ CREATE OR REPLACE VIEW ontology.part_supplier_sourcing AS
   <p>
     So the ontology does not make the agent cleverer. It means somebody wrote down, once, which of
     two similar-looking tables is the real one — and now the agent cannot pick the other. On
-    Question 2 that was two function calls: <code>kg_find_node('Supplier 001')</code>, then
+    Question 2 that was two function calls: <code>kg_find_node('Aravalli Precision Industries')</code>, then
     <code>kg_neighbors('Supplier', key, 'supplierSuppliesPart')</code>. Following the graph replaced
     all the hunting.
   </p>
@@ -790,13 +828,13 @@ CREATE OR REPLACE VIEW ontology.part_supplier_sourcing AS
     <em>do not edit by hand</em> header, and the build fails if any is older than the TTL.
   </p>
 </section>
-
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 <!-- ============================= 05 ============================= -->
 <section class="pb">
   <div class="sec-head"><span class="sec-num">05</span><h2>Side by side</h2></div>
   <p style="font-family:var(--sans); font-size:8pt; color:var(--ink-3); margin-bottom:1em">
     Q1 · “What did we spend last month?” (6 checkpoints) &nbsp;·&nbsp;
-    Q2 · “If Supplier 001 goes down tomorrow…” (9 checkpoints)
+    Q2 · “If Aravalli Precision Industries goes down tomorrow…” (9 checkpoints)
   </p>
 
   <div class="scroll">
@@ -804,28 +842,28 @@ CREATE OR REPLACE VIEW ontology.part_supplier_sourcing AS
     <thead>
       <tr>
         <th style="width:19%">Dimension</th>
-        <th style="width:26%">1 · Tables only</th>
-        <th style="width:27%">2 · Semantic layer</th>
-        <th style="width:28%">3 · Ontology + KG</th>
+        <th style="width:26%">1 · Out of box genie agent with table source</th>
+        <th style="width:27%">2 · Genie Agent with semantic layer and instructions</th>
+        <th style="width:28%">3 · Genie agent with source semantic layer, ontology and knowledge graph</th>
       </tr>
     </thead>
     <tbody>
       <tr><td colspan="4" style="border-bottom:1.5px solid var(--ink); padding-top:1em"><span class="eyebrow">Accuracy</span></td></tr>
       <tr><td class="k">Q1 · ambiguous cost</td><td>1/6</td><td>3/6</td><td>5/6</td></tr>
-      <tr><td class="k">Q2 · supplier outage reach</td><td>3/9</td><td>3/9</td><td>8/9</td></tr>
-      <tr><td class="k">Total</td><td><strong>4/15 · 27%</strong></td><td><strong>6/15 · 40%</strong></td><td><strong>13/15 · 87%</strong></td></tr>
-      <tr><td class="k">Failures a reader could spot alone</td><td>2 of 10 — the rest are things left out</td><td>1 of 8 — the short list leaves no trace</td><td>1 of 1 — the missing money column is obvious on the page</td></tr>
+      <tr><td class="k">Q2 · supplier outage reach</td><td>4/9</td><td>5/9</td><td>8/9</td></tr>
+      <tr><td class="k">Total</td><td><strong>5/15 · 33%</strong></td><td><strong>8/15 · 53%</strong></td><td><strong>13/15 · 87%</strong></td></tr>
+      <tr><td class="k">Failures a reader could spot alone</td><td>2 of 10 — the rest are things left out</td><td>3 of 7 — and it is the only one that warns you a gap exists</td><td>1 of 1 — nothing on the page says as of when</td></tr>
 
       <tr><td colspan="4" style="border-bottom:1.5px solid var(--ink); padding-top:1em"><span class="eyebrow">Cost &amp; behaviour</span></td></tr>
-      <tr><td class="k">Query steps · Q2</td><td>8</td><td>~17</td><td>~11</td></tr>
-      <tr><td class="k">Visible correction rounds · Q2</td><td>1</td><td>6 — name format, JOIN vs WHERE, <code>IS_CURRENT</code>, two rebuilds</td><td>0</td></tr>
+      <tr><td class="k">Query steps · Q2</td><td>7</td><td>13</td><td>12</td></tr>
+      <tr><td class="k">Visible correction rounds · Q2</td><td>1 — a bad supplier join, re-routed through the inspection log</td><td>2 — two bad supplier queries, resolved by sampling every supplier name</td><td>0</td></tr>
       <tr><td class="k">Same answer next time?</td><td>Unlikely — it re-invents both the measure and the link</td><td>Partly — measures are fixed, the link is still a guess</td><td>Yes — measures and links are both declared</td></tr>
 
       <tr><td colspan="4" style="border-bottom:1.5px solid var(--ink); padding-top:1em"><span class="eyebrow">Fitness for executive use</span></td></tr>
-      <tr><td class="k">Snapshot discipline</td><td>Undated</td><td>Undated</td><td>Dated — “as of September 4, 2026”</td></tr>
-      <tr><td class="k">Answers in currency</td><td>No</td><td><strong>Yes</strong> — the only one</td><td>No</td></tr>
-      <tr><td class="k">Answers completely</td><td>No</td><td>No</td><td><strong>Yes</strong> — the only one</td></tr>
-      <tr><td class="k">How it fails</td><td>Closes the question by saying the data isn't there</td><td>Gives an exact total over a short list</td><td>Says what it covered, and on what date</td></tr>
+      <tr><td class="k">Snapshot discipline</td><td>Undated</td><td><strong>Dated</strong> — September 4, 2026, the only one</td><td>Undated</td></tr>
+      <tr><td class="k">Answers in currency</td><td>Yes — ₹53.9 L, over three of four parts</td><td>Yes — ₹53.89 L, over the same three</td><td><strong>Yes</strong> — ₹1.07 Cr over all four</td></tr>
+      <tr><td class="k">Answers completely</td><td>No</td><td>No — but it says so</td><td><strong>Yes</strong> — the only one</td></tr>
+      <tr><td class="k">How it fails</td><td>Closes one question by saying the data isn't there; prices half an exposure and calls it the total</td><td>Prices the same half exposure — dated, classified and caveated, which makes it the more convincing of the two</td><td>Says what it covered and what it is worth, but not as of when</td></tr>
       <tr><td class="k">Best use</td><td>Poking around, by someone who knows the schema</td><td>Governed metric reporting where the join already exists</td><td>Executive questions about how the business connects</td></tr>
     </tbody>
   </table>
@@ -836,8 +874,10 @@ CREATE OR REPLACE VIEW ontology.part_supplier_sourcing AS
     <p>
       The semantic layer stops the agent calculating the number wrong. The ontology stops it
       answering the wrong question. The graph stops it answering only part of one. Here the first was
-      worth 13 points and the other two together were worth 47 — and only the third caught a
-      high-risk part that was about to run out.
+      worth three checkpoints in fifteen — a clarifying question, a withheld figure and a dated
+      snapshot, all over a row set it never touched — and the other two together were worth 34
+      points, including a high-risk part
+      worth ₹53 Lakh that neither of the other setups knew existed.
     </p>
   </div>
 </section>
@@ -848,50 +888,56 @@ CREATE OR REPLACE VIEW ontology.part_supplier_sourcing AS
 
   <div class="finding" style="margin-top:0">
     <h4>Build on Setup 3</h4>
-    <p class="claim">Genie Agent with the semantic layer, the ontology and the knowledge graph — and close its one gap, which is a two-line instruction change.</p>
+    <p class="claim">Genie Agent with the semantic layer, the ontology and the knowledge graph — and close its one gap, which is a one-line instruction change.</p>
     <p>
-      Setup 3 did not win everything. Setup 2 was the only session that priced the exposure, and when
-      a supplier goes down, money is not optional. Setup 3 is the only one whose remaining fault you
-      can <em>see</em>. A missing rupee column makes you ask a follow-up question. A missing part does
-      not.
+      Setup 3 lost exactly one checkpoint on the outage question: <strong>its answer does not say
+      what date its stock figures came from</strong>. Setup 1 fails the same way. Setup 2 does not —
+      it stamps “as of September 4, 2026” — which proves the fix is a line of
+      instruction, not a deployment. Everything else Setup 3 was previously missing — the money — it
+      now supplies, at ₹1.07 Cr, reconciling per part and per warehouse.
     </p>
   </div>
 
   <p style="margin-top:1.3em">Three things earn it the recommendation:</p>
   <ol class="numbered">
     <li>
-      <strong>Only the graph answered in full.</strong> Both lower setups gave three of four
-      contracted parts, six of seven exposed warehouses and two of three locations at immediate risk
-      — and presented each as a complete count. That ceiling is built into the setup, not the
+      <strong>Only the graph answered in full.</strong> Both lower setups returned the identical nine
+      warehouse-part rows and the same ₹53.9 Lakh total: three of four contracted parts, six of seven
+      exposed warehouses, and two of three locations at immediate risk. Setup 1 presented that as the
+      complete count; Setup 2 warned the list covers inspected parts only — but could not say which
+      part, or that it was the most valuable one. That ceiling is built into the setup, not the
       behaviour: neither space can see <code>dim_supplier_contract</code>, so no prompt will raise it.
     </li>
     <li>
-      <strong>Declared relationships stop the thrashing.</strong> Setup 2 spent six repair rounds and
-      about seventeen steps poking at tables that were never a sourcing register, and still came back
-      short. Setup 3 followed one edge, took eleven steps, and fixed nothing. That saves warehouse
-      time as well as improving accuracy.
+      <strong>The graph is the only thing that moved the answer, and it did not cost more.</strong>
+      Setup 2 spent thirteen steps and two correction rounds to reach the short list; Setup 3
+      reached the full one in twelve, with no repairs. Declared relationships replaced the hunting — the
+      fourth part, the seventh warehouse, the third at-risk location and ₹53.2 Lakh of exposure
+      nobody else saw, for one step fewer than the setup that missed them.
     </li>
     <li>
       <strong>Only the ontology gave us an answer we can audit.</strong> Named definitions on
-      Question 1, a stated snapshot date and classified parts on Question 2. We cannot
-      regression-test an answer that will not say what it measured, or when.
+      Question 1; all four parts classified B/C with subsystem on Question 2, and a rupee figure that
+      reconciles per part and per warehouse. We cannot regression-test an answer that will not say
+      what it measured.
     </li>
   </ol>
 
   <h4>Do this next</h4>
   <ol class="numbered">
     <li>
-      <strong>Spell out “follow the graph, then measure” in the space instructions.</strong> The one
-      checkpoint Setup 3 lost is a routing gap, not a data gap. Once it has the entity set from
-      <code>kg_edges</code>, it should price them with <code>MEASURE(total_stock_valuation)</code> on
-      <code>metrics_inventory_snapshot</code> before answering. Do <em>not</em> put money into
-      <code>kg_edges</code> — keeping it navigation-only is what keeps those two tables small and
-      correct.
+      <strong>Make every answer state its snapshot date.</strong> Setup 2 already does this and the
+      other two do not, which settles the argument: it is an instruction, not a deployment. Any
+      answer resting on
+      <code>is_current_snapshot</code> must carry its as-of date in the reply. Keep the rest of
+      Setup 3's routing as it stands — it already follows the graph and <em>then</em> measures, which
+      is why it prices the complete set. Do <em>not</em> put money into <code>kg_edges</code>;
+      keeping it navigation-only is what keeps those two tables small and correct.
     </li>
     <li>
       <strong>Put both questions in Benchmark, with their counts as assertions.</strong> “4 parts,
-      7 warehouses, 3 at-risk locations, snapshot 2026-09-04” is exactly the kind of claim that breaks
-      without anyone seeing it. A standing set of questions turns this evaluation into a test.
+      7 warehouses, 3 at-risk locations, ₹1.07 Cr total exposure” is exactly the kind of claim that
+      breaks without anyone seeing it. A standing set of questions turns this evaluation into a test.
     </li>
     <li>
       <strong>Decide whether cost per lead belongs in the clarification</strong> — accept three
@@ -907,8 +953,10 @@ CREATE OR REPLACE VIEW ontology.part_supplier_sourcing AS
     <li>
       <strong>Do not put the tables-only space in front of an executive.</strong> It is a decent
       exploration tool for someone who knows the schema and will check the output. Here it closed one
-      question by claiming the data was not there, and reported a partial answer as a total — with no
-      reason for the reader to doubt either.
+      question by claiming the data was not there, then priced half a supply-chain exposure to the
+      rupee and labelled it the total — with no reason for the reader to doubt either. A precise
+      number over a short list is the most convincing wrong answer on this page — and the semantic
+      layer makes it more convincing still, not less, by dating and charting the same short list.
     </li>
   </ol>
 
@@ -926,7 +974,7 @@ CREATE OR REPLACE VIEW ontology.part_supplier_sourcing AS
     <strong>Brief · evaluation of six captured Genie Agent sessions</strong> ·
     two questions × three grounding setups on <span class="mono">gold_dev_analytics</span>,
     agent <span class="mono">[dev joyal_cs] Executive Analyst</span>, Serverless Starter Warehouse,
-    inventory snapshot 2026-09-04.
+    inventory snapshot 2026-09-04, as stated by the Setup 2 session.
   </p>
   <p style="margin:0">
     Condensed from <span class="mono">docs/genie-agent-grounding.html</span>, which carries all six

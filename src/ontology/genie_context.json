@@ -124,10 +124,8 @@
       "term": "CampaignSpend",
       "kind": "kpi",
       "synonyms": [
-        "spend",
         "ad spend",
-        "campaign spend",
-        "marketing cost"
+        "campaign spend"
       ]
     },
     {
@@ -289,6 +287,7 @@
       "values": [
         "ACCEPT",
         "ACCEPT & SORT",
+        "SORT_AND_USE",
         "REWORK",
         "RETURN"
       ],
@@ -299,7 +298,8 @@
       "values": [
         "LOW",
         "MEDIUM",
-        "HIGH"
+        "HIGH",
+        "CRITICAL"
       ],
       "column": "supply_chain_analytics.fact_inventory_snapshot.STOCKOUT_RISK"
     },

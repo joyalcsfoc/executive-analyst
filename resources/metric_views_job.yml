@@ -11,6 +11,9 @@ resources:
         GENERATED from src/ontology/exec_analyst.ttl by src/ontology/generate.py —
         run `./deploy.sh regen-tags` after editing the TTL, before running this job.
 
+        edge_sources.sql is the exception: hand-written, and it must run first because
+        materialize_kg reads the key-resolved views it creates.
+
         grant_kg.sql is NOT in this job: issuing GRANT requires MANAGE on the schema,
         which the warehouse service principal typically does not have. Run it once
         manually in the SQL editor as a catalog owner / metastore admin:
@@ -27,15 +30,38 @@ resources:
           default: ${var.genie_space_permission_group}
 
       tasks:
+        # Key-resolved edge sources. Hand-written, not generated: relations whose
+        # authoritative source is keyed on business IDs get them resolved to surrogate
+        # keys here, because ea:edgeFrom names one relation and cannot express a join.
+        # Must precede materialize_kg, which reads these views.
+        - task_key: edge_sources
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/ontology/edge_sources.sql
+
         - task_key: materialize_kg
+          depends_on:
+            - task_key: edge_sources
           sql_task:
             warehouse_id: ${var.warehouse_id}
             file:
               path: ../src/ontology/materialize_kg.sql
 
-        - task_key: kg_functions
+        # CREATE OR REPLACE TABLE AS SELECT over empty sources succeeds with 0 rows,
+        # so the run must verify its own output. Fails loudly if the gold dims/facts
+        # were mid-TRUNCATE (upstream reload) when materialize_kg read them.
+        - task_key: assert_kg_integrity
           depends_on:
             - task_key: materialize_kg
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/tests/assert_kg_integrity.sql
+
+        - task_key: kg_functions
+          depends_on:
+            - task_key: assert_kg_integrity
           sql_task:
             warehouse_id: ${var.warehouse_id}
             file:
