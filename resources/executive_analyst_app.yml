@@ -1,0 +1,19 @@
+resources:
+  apps:
+    executive_analyst_app:
+      # Target-suffixed: dev and prod share a workspace host, and bundle dev mode
+      # does not prefix app names the way it prefixes Genie space titles -- so an
+      # unsuffixed name means a prod deploy silently overwrites the dev app.
+      name: executive-analyst-app-${bundle.target}
+      description: >
+        Wrapper service in front of the Genie Conversation API. Step 0 is a bare
+        passthrough; the input and output guardrails (gates 1 and 5) land here
+        because a Genie space has nowhere to put them. Creating the app also
+        creates the service principal that Phase 1 grants read-only access to.
+      source_code_path: ../app
+
+      resources:
+        - name: warehouse
+          sql_warehouse:
+            id: ${var.warehouse_id}
+            permission: CAN_USE

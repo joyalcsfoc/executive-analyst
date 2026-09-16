@@ -2,6 +2,10 @@
 -- OEE_PCT and components are stored as 0–100 percent values (confirmed gold_dev).
 -- "Below 70%" means OEE_PCT < 70. Dim joins: plant, production_line, vehicle_model, date.
 -- No dim_shift — use SHIFT_CODE.
+-- average_oee is PLANNED_QTY-weighted (Gate 4). ponytail: PLANNED_QTY is a proxy
+-- for scheduled runtime, which is the textbook OEE weight. If the fact ever gains
+-- a planned/scheduled minutes column, weight by that instead — the shape of the
+-- expression does not change, only the weight column.
 
 EXECUTE IMMEDIATE
 "CREATE OR REPLACE VIEW " || {{catalog}} || ".manufacturing_analytics.metrics_production_execution
@@ -74,10 +78,24 @@ fields:
 
 measures:
   - name: average_oee
-    expr: AVG(OEE_PCT)
+    expr: SUM(OEE_PCT * PLANNED_QTY) / NULLIF(SUM(PLANNED_QTY), 0)
     display_name: Average OEE
-    comment: Overall equipment effectiveness as 0–100 percent. Below 70% means OEE_PCT < 70.
-    synonyms: [OEE, average OEE, overall equipment effectiveness, efficiency]
+    comment: >
+      Overall equipment effectiveness as 0–100 percent, weighted by PLANNED_QTY.
+      Weighted on purpose: a flat AVG lets a 20-unit changeover run count the same
+      as a full shift, which quietly drags a plant's OEE toward the OEE of its
+      shortest runs. Name kept as average_oee because the ontology binding, the
+      Genie space instructions and the wiring checklist all reference it — the
+      formula changed, the contract did not. Below 70% means OEE_PCT < 70.
+    synonyms: [OEE, average OEE, overall equipment effectiveness, efficiency, weighted OEE]
+  - name: unweighted_oee_diagnostic
+    expr: AVG(OEE_PCT)
+    display_name: Unweighted OEE (diagnostic only)
+    comment: >
+      Flat mean of OEE_PCT counting every row equally regardless of run size.
+      Not for reporting — use average_oee. Kept so the two can be compared when
+      checking whether a plant's mix of short runs is distorting a figure.
+      No synonyms on purpose: nothing a user says should route here.
   - name: average_availability
     expr: AVG(AVAILABILITY_PCT)
     display_name: Average Availability

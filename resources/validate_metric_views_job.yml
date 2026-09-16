@@ -16,6 +16,8 @@ resources:
       parameters:
         - name: catalog
           default: ${var.gold_catalog}
+        - name: agent_sp
+          default: ${var.agent_service_principal}
 
       tasks:
         - task_key: assert_dim_uniqueness
@@ -41,6 +43,15 @@ resources:
             warehouse_id: ${var.warehouse_id}
             file:
               path: ../src/tests/assert_snapshot_grain.sql
+
+        # Gate 3: the agent's identity holds SELECT and nothing more, and still
+        # holds SELECT on all five views. Reads grant metadata rather than
+        # attempting a write -- see the header of the file for why.
+        - task_key: assert_agent_readonly
+          sql_task:
+            warehouse_id: ${var.warehouse_id}
+            file:
+              path: ../src/tests/assert_agent_readonly.sql
 
         # Generated from src/ontology/exec_analyst.ttl by src/ontology/generate.py.
         # Checks the DATA in ontology.kg_* against the TBox; src/ontology/test_generate.py

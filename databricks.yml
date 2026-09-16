@@ -14,6 +14,14 @@ variables:
   genie_space_permission_level:
     description: Permission level granted to genie_space_permission_group (CAN_VIEW, CAN_RUN, CAN_EDIT, CAN_MANAGE).
     default: CAN_RUN
+  agent_service_principal:
+    description: >
+      Application ID of the wrapper app's service principal -- the identity Genie
+      queries actually run as. Grant target for src/security/grant_agent_readonly.sql
+      and subject of src/tests/assert_agent_readonly.sql. Created by the app, so it
+      differs per target; read it from `databricks apps get <app name>`.
+    default: 5745e78b-9989-4c04-ac6c-50c5a79028ac
+
   genie_space_permission_group:
     description: >
       Workspace / account group for Genie space ACL and for GRANT SELECT on the five
